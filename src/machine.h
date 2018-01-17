@@ -16,17 +16,18 @@ class Thread {
 
   // Return true if in this one step, this thread successfully consumes the
   // given character c.
-  void ExecuteOneStep(char c);
+  bool RunOneStep(char c);
  private:
   Machine &machine;
   int pc;
 };
 
+// A virtual machine to run Thompson's algorithm.
 class Machine {
  public:
   Machine(const Program &program_) : program(program_) {}
 
-  bool Execute(const std::string &s);
+  bool Run(const std::string &s);
 
   void AddThread(Thread &&thread) { ready.push(thread); }
 
@@ -36,10 +37,8 @@ class Machine {
 
  private:
   const Program program;
-
-  std::queue<Thread> ready;
-
-  bool matched;
+  std::queue<Thread> ready;   // set of threads to run in current round
+  bool matched;               // match status
 };
 
 };  // namespace azuki
