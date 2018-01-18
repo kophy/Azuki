@@ -16,6 +16,8 @@ bool Thread::RunOneStep(char c) {
       return true;
     case CHAR:
       return (instr->c == c);
+    case DOT:
+      return true;
     case JMP:
       machine.AddReadyThread(Thread(machine, instr->dst));
       break;
@@ -36,11 +38,12 @@ bool Thread::RunOneStep(char c) {
 
 MatchStatus Machine::Run(const std::string &s) {
   ready = std::queue<Thread>();
+  ready.push(Thread(*this, 0));
+
   status.match = false;
 
   // Need an extra character '$' to finish ready threads.
   for (char c : s + "$") {
-    ready.push(Thread(*this, 0));
     std::queue<Thread> next;
 
     while (!ready.empty()) {

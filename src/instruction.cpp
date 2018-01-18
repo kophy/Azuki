@@ -14,6 +14,9 @@ std::string Instruction::to_string() {
   std::stringstream ss;
   ss << "I" << idx << " ";
   switch (opcode) {
+    case ANY:
+      ss << "ANY";
+      break;
     case CHAR:
       ss << "CHAR " << c;
       break;
@@ -63,8 +66,16 @@ int count(std::shared_ptr<Regexp> r) {
       return 2 + count(r->left) + count(r->right);
     case CAT:
       return count(r->left) + count(r->right);
+    case DOT:
+      return 1;
     case LIT:
       return 1;
+    case PLUS:
+      return 2 + count(r->left);
+    case QUEST:
+      return 1 + count(r->left);
+    case STAR:
+      return 2 + count(r->left);
     default:
       std::cerr << "Error: invalid regexp type." << std::endl;
       throw std::exception();
@@ -93,8 +104,25 @@ void Emit(Program &program, int &pc, std::shared_ptr<Regexp> r) {
   } else if (r->type == CAT) {
     Emit(program, pc, r->left);
     Emit(program, pc, r->right);
+  } else if (r->type == DOT) {
+    program[pc++] = CreateAnyInstruction();
   } else if (r->type == LIT) {
     program[pc++] = CreateCharInstruction(r->c);
+  } else if (r->type == PLUS) {
+    int current_pc = pc;
+    Emit(program, pc, r->left);
+    program[pc] = CreateSplitInstruction(pc + 2);
+    ++pc;
+    program[pc++] = CreateJmpInstruction(current_pc);
+  } else if (r->type == QUEST) {
+    int split_pc = pc++;
+    Emit(program, pc, r->left);
+    program[split_pc] = CreateSplitInstruction(pc);
+  } else if (r->type == STAR) {
+    int split_pc = pc++;
+    Emit(program, pc, r->left);
+    program[pc++] = CreateJmpInstruction(split_pc);
+    program[split_pc] = CreateSplitInstruction(pc);
   } else {
     std::cerr << "Error: invalid regexp type." << std::endl;
     throw std::exception();
