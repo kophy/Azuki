@@ -4,6 +4,11 @@
 
 namespace azuki {
 
+TEST(InstructionTest, InvalidInstruction) {
+  Instruction instr;
+  EXPECT_THROW(instr.to_string(), std::exception);
+}
+
 TEST(InstructionTest, SingleChar) {
   std::shared_ptr<Regexp> r(new Regexp(LIT, 'a'));
   Program program = CompileRegex(r);

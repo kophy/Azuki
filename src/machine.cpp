@@ -1,13 +1,10 @@
-#include "machine.h"
-
-#ifdef DEBUG
 #include <iostream>
-#endif
+#include "machine.h"
 
 namespace azuki {
 
 bool Thread::RunOneStep(char c) {
-  InstrPtr instr = machine.FetchInstruction(pc);
+  InstrPtr instr = machine.FetchInstruction(pc++);
 
 #if DEBUG
   PrintInstruction(instr, pc);
@@ -18,29 +15,30 @@ bool Thread::RunOneStep(char c) {
     case ANY:
       return true;
     case CHAR:
-      ++pc;
       return (instr->c == c);
     case JMP:
-      machine.AddThread(Thread(machine, instr->dst));
+      machine.AddReadyThread(Thread(machine, instr->dst));
       break;
     case MATCH:
-      machine.SetMatched(true);
+      machine.UpdateStatus(true);
       break;
     case SPLIT:
-      machine.AddThread(Thread(machine, pc + 1));
-      machine.AddThread(Thread(machine, instr->dst));
+      machine.AddReadyThread(Thread(machine, pc));
+      machine.AddReadyThread(Thread(machine, instr->dst));
       break;
     default:
       // TODO: add error handling code
-      break;
+      std::cerr << "Error: invalid instruction type." << std::endl;
+      throw std::exception();
   }
   return false;
 }
 
-bool Machine::Run(const std::string &s) {
+MatchStatus Machine::Run(const std::string &s) {
   ready = std::queue<Thread>();
-  matched = false;
+  status.match = false;
 
+  // Need an extra character '$' to finish ready threads.
   for (char c : s + "$") {
     ready.push(Thread(*this, 0));
     std::queue<Thread> next;
@@ -52,12 +50,11 @@ bool Machine::Run(const std::string &s) {
       // If the thread successfully consumes the character, we need to save it
       // for next round.
       if (t.RunOneStep(c)) next.push(t);
-      if (matched) return true;
+      if (status.match) return status;
     }
     ready = std::move(next);
   }
-
-  return matched;
+  return status;
 }
 
 };  // namespace azuki

@@ -7,10 +7,10 @@ TEST(MachineTest, SingleChar) {
   std::shared_ptr<Regexp> r(new Regexp(LIT, 'a'));
   Program program = CompileRegex(r);
   Machine machine(program);
-  EXPECT_TRUE(machine.Run("a"));
-  EXPECT_TRUE(machine.Run("bca"));
-  EXPECT_FALSE(machine.Run("b"));
-  EXPECT_FALSE(machine.Run("bbb"));
+  EXPECT_TRUE(machine.Run("a").match);
+  EXPECT_TRUE(machine.Run("bca").match);
+  EXPECT_FALSE(machine.Run("b").match);
+  EXPECT_FALSE(machine.Run("bbb").match);
 }
 
 TEST(MachineTest, SimpleCat) {
@@ -19,10 +19,10 @@ TEST(MachineTest, SimpleCat) {
   r->right.reset(new Regexp(LIT, 'b'));
   Program program = CompileRegex(r);
   Machine machine(program);
-  EXPECT_TRUE(machine.Run("ab"));
-  EXPECT_TRUE(machine.Run("cab"));
-  EXPECT_FALSE(machine.Run("a"));
-  EXPECT_FALSE(machine.Run("bc"));
+  EXPECT_TRUE(machine.Run("ab").match);
+  EXPECT_TRUE(machine.Run("cab").match);
+  EXPECT_FALSE(machine.Run("a").match);
+  EXPECT_FALSE(machine.Run("bc").match);
 }
 
 TEST(InstructionTest, SimpleSplit) {
@@ -31,9 +31,9 @@ TEST(InstructionTest, SimpleSplit) {
   r->right.reset(new Regexp(LIT, 'b'));
   Program program = CompileRegex(r);
   Machine machine(program);
-  EXPECT_TRUE(machine.Run("a"));
-  EXPECT_TRUE(machine.Run("b"));
-  EXPECT_FALSE(machine.Run("c"));
+  EXPECT_TRUE(machine.Run("a").match);
+  EXPECT_TRUE(machine.Run("b").match);
+  EXPECT_FALSE(machine.Run("c").match);
 }
 
 };  // namespace azuki

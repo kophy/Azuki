@@ -12,17 +12,19 @@ enum Opcode {
   ANY,
   CHAR,
   MATCH,
-  NIL,
+  NIL,  // suggest the instruction is invalid
   SPLIT,
   JMP
 };
 
 struct Instruction {
-  Opcode opcode;      // used in all instructions
-  char c;             // only used in CHAR instruction
-  int dst;            // only used in SPLIT and JMP instructions
+  unsigned int idx;  // instruction index
+  Opcode opcode;     // instruction type
+  char c;            // character to match (CHAR)
+  unsigned int dst;  // destination instruction index (SPLIT and JMP)
 
-  Instruction(Opcode opcode_ = NIL) : opcode(opcode_) {};
+  Instruction(Opcode opcode = NIL) : opcode(opcode) {}
+  std::string to_string();
 };
 
 typedef std::shared_ptr<Instruction> InstrPtr;
@@ -40,8 +42,6 @@ int CountInstruction(std::shared_ptr<Regexp> r);
 
 // Compile the regexp into a program.
 Program CompileRegex(std::shared_ptr<Regexp> r);
-
-void PrintInstruction(InstrPtr instr, int idx);
 
 // Print the program (instruction addresses are replaced with ids).
 void PrintProgram(Program &program);

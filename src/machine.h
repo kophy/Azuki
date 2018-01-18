@@ -12,33 +12,42 @@ class Machine;
 
 class Thread {
  public:
-  Thread(Machine &machine_, int pc_) : machine(machine_), pc(pc_) {}
+  Thread(Machine &machine, int pc) : machine(machine), pc(pc) {}
 
   // Return true if in this one step, this thread successfully consumes the
   // given character c.
+  // Otherwise,
   bool RunOneStep(char c);
+
  private:
   Machine &machine;
   int pc;
 };
 
+// Hold result of regexp match.
+struct MatchStatus {
+  bool match;
+};
+
 // A virtual machine to run Thompson's algorithm.
 class Machine {
  public:
-  Machine(const Program &program_) : program(program_) {}
+  Machine(const Program &program) : program(program) {}
 
-  bool Run(const std::string &s);
+  // Run program on input string s.
+  MatchStatus Run(const std::string &s);
 
-  void AddThread(Thread &&thread) { ready.push(thread); }
+  // Add a thread to run in this round.
+  void AddReadyThread(Thread &&thread) { ready.push(thread); }
 
-  void SetMatched(bool matched_) { matched = matched_; }
+  void UpdateStatus(bool match) { status.match = match; }
 
   const InstrPtr FetchInstruction(int pc) const { return program[pc]; }
 
  private:
   const Program program;
-  std::queue<Thread> ready;   // set of threads to run in current round
-  bool matched;               // match status
+  std::queue<Thread> ready;  // set of threads to run in current round
+  MatchStatus status;        // keep regex match status
 };
 
 };  // namespace azuki

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "instruction.h"
 
 namespace azuki {
@@ -8,6 +9,29 @@ int count(std::shared_ptr<Regexp> r);
 
 // Helper function to compile regex into program.
 void Emit(Program &program, int &pc, std::shared_ptr<Regexp> r);
+
+std::string Instruction::to_string() {
+  std::stringstream ss;
+  ss << "I" << idx << " ";
+  switch (opcode) {
+    case CHAR:
+      ss << "CHAR " << c;
+      break;
+    case JMP:
+      ss << "JMP I" << dst;
+      break;
+    case MATCH:
+      ss << "MATCH";
+      break;
+    case SPLIT:
+      ss << "SPLIT I" << idx + 1 << " I" << dst;
+      break;
+    default:
+      std::cerr << "Error: invalid instruction type." << std::endl;
+      throw std::exception();
+  }
+  return ss.str();
+}
 
 InstrPtr CreateAnyInstruction() { return InstrPtr(new Instruction(ANY)); }
 
@@ -43,7 +67,7 @@ int count(std::shared_ptr<Regexp> r) {
       return 1;
     default:
       std::cerr << "Error: invalid regexp type." << std::endl;
-      abort();
+      throw std::exception();
   }
 }
 
@@ -52,6 +76,9 @@ Program CompileRegex(std::shared_ptr<RegexNode> r) {
   int pc = 0;
   Emit(program, pc, r);
   program[pc] = CreateMatchInstruction();
+
+  for (int idx = 0; idx < program.size(); ++idx)
+    program[idx]->idx = idx;
   return program;
 }
 
@@ -70,35 +97,14 @@ void Emit(Program &program, int &pc, std::shared_ptr<Regexp> r) {
     program[pc++] = CreateCharInstruction(r->c);
   } else {
     std::cerr << "Error: invalid regexp type." << std::endl;
-    abort();
-  }
-}
-
-void PrintInstruction(InstrPtr instr, int idx) {
-  std::cout << "I" << idx << ": ";
-  switch (instr->opcode) {
-    case CHAR:
-      std::cout << "CHAR " << instr->c << std::endl;
-      break;
-    case JMP:
-      std::cout << "JMP I" << instr->dst << std::endl;
-      break;
-    case MATCH:
-      std::cout << "MATCH" << std::endl;
-      break;
-    case SPLIT:
-      std::cout << "SPLIT I" << idx + 1 << " I" << instr->dst << std::endl;
-      break;
-    default:
-      std::cout << "Error: invalid instruction opcode." << std::endl;
-      abort();
+    throw std::exception();
   }
 }
 
 void PrintProgram(Program &program) {
   for (int idx = 0; idx < program.size(); ++idx) {
     auto &instr = program[idx];
-    PrintInstruction(instr, idx);
+    std::cout << instr->to_string() << std::endl;
   }
 }
 
