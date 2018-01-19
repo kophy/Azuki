@@ -5,6 +5,7 @@ project (azuki)
 
 enable_testing()
 
-add_subdirectory(ext/gtest)
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
 add_subdirectory(src)
 add_subdirectory(tests)
