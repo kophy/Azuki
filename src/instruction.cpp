@@ -5,10 +5,10 @@
 namespace azuki {
 
 // Helper function to count the number of instructions.
-int count(std::shared_ptr<Regexp> r);
+int count(RegexpPtr r);
 
 // Helper function to compile regex into program.
-void Emit(Program &program, int &pc, std::shared_ptr<Regexp> r);
+void Emit(Program &program, int &pc, RegexpPtr r);
 
 std::string Instruction::to_string() {
   std::stringstream ss;
@@ -58,9 +58,9 @@ InstrPtr CreateJmpInstruction(int dst) {
   return instr;
 }
 
-int CountInstruction(std::shared_ptr<RegexNode> r) { return count(r) + 1; }
+int CountInstruction(RegexpPtr r) { return count(r) + 1; }
 
-int count(std::shared_ptr<Regexp> r) {
+int count(RegexpPtr r) {
   switch (r->type) {
     case ALT:
       return 2 + count(r->left) + count(r->right);
@@ -82,7 +82,7 @@ int count(std::shared_ptr<Regexp> r) {
   }
 }
 
-Program CompileRegex(std::shared_ptr<RegexNode> r) {
+Program CompileRegex(RegexpPtr r) {
   Program program(CountInstruction(r));
   int pc = 0;
   Emit(program, pc, r);
@@ -93,7 +93,7 @@ Program CompileRegex(std::shared_ptr<RegexNode> r) {
   return program;
 }
 
-void Emit(Program &program, int &pc, std::shared_ptr<Regexp> r) {
+void Emit(Program &program, int &pc, RegexpPtr r) {
   if (r->type == ALT) {
     int split_pc = pc++;
     Emit(program, pc, r->left);

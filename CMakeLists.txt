@@ -6,6 +6,6 @@ project (azuki)
 enable_testing()
 
 find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+find_package(Boost REQUIRED COMPONENTS system)
 add_subdirectory(src)
 add_subdirectory(tests)

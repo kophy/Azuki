@@ -38,10 +38,10 @@ InstrPtr CreateSplitInstruction(int dst);
 InstrPtr CreateJmpInstruction(int dst);
 
 // Count the number of instructions required to represent the regexp.
-int CountInstruction(std::shared_ptr<Regexp> r);
+int CountInstruction(RegexpPtr r);
 
 // Compile the regexp into a program.
-Program CompileRegex(std::shared_ptr<Regexp> r);
+Program CompileRegex(RegexpPtr r);
 
 // Print the program (instruction addresses are replaced with ids).
 void PrintProgram(Program &program);

@@ -1,5 +1,15 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
+include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+
+add_executable(test_regexp test_regexp.cpp)
+target_link_libraries(test_regexp
+  ${GTEST_BOTH_LIBRARIES}
+  ${Boost_LIBRARIES}
+  regexp
+)
+
+add_test(test_regexp test_regexp)
 
 add_executable(test_instruction test_instruction.cpp)
 target_link_libraries(test_instruction
