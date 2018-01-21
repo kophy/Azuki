@@ -16,8 +16,6 @@ bool Thread::RunOneStep(char c) {
       return true;
     case CHAR:
       return (instr->c == c);
-    case DOT:
-      return true;
     case JMP:
       machine.AddReadyThread(Thread(machine, instr->dst));
       break;

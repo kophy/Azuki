@@ -27,3 +27,13 @@ target_link_libraries(test_machine
 )
 
 add_test(test_machine test_machine)
+
+add_executable(test_full test_full.cpp)
+target_link_libraries(test_full
+  regexp
+  instruction
+  machine
+  ${GTEST_BOTH_LIBRARIES}
+)
+
+add_test(test_full test_full)
