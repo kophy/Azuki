@@ -4,13 +4,20 @@
 
 namespace azuki {
 
-// Helper function to count the number of instructions.
-int count(RegexpPtr r);
+// Convenience functions to create different instructions.
+InstrPtr CreateAnyInstruction();
+InstrPtr CreateCharInstruction(char c);
+InstrPtr CreateMatchInstruction();
+InstrPtr CreateSplitInstruction(int dst);
+InstrPtr CreateJmpInstruction(int dst);
 
-// Helper function to compile regex into program.
+// Count the number of instructions required to represent the regexp.
+int CountInstruction(RegexpPtr r);
+
+// Emit instructions compiled from regexp to program with starting index pc.
 void Emit(Program &program, int &pc, RegexpPtr r);
 
-std::string Instruction::to_string() {
+std::string Instruction::str() {
   std::stringstream ss;
   ss << "I" << idx << " ";
   switch (opcode) {
@@ -58,24 +65,25 @@ InstrPtr CreateJmpInstruction(int dst) {
   return instr;
 }
 
-int CountInstruction(RegexpPtr r) { return count(r) + 1; }
+int CountInstructionImpl(RegexpPtr r);
+int CountInstruction(RegexpPtr r) { return CountInstructionImpl(r) + 1; }
 
-int count(RegexpPtr r) {
+int CountInstructionImpl(RegexpPtr r) {
   switch (r->type) {
     case ALT:
-      return 2 + count(r->left) + count(r->right);
+      return 2 + CountInstructionImpl(r->left) + CountInstructionImpl(r->right);
     case CAT:
-      return count(r->left) + count(r->right);
+      return CountInstructionImpl(r->left) + CountInstructionImpl(r->right);
     case DOT:
       return 1;
     case LIT:
       return 1;
     case PLUS:
-      return 2 + count(r->left);
+      return 2 + CountInstructionImpl(r->left);
     case QUEST:
-      return 1 + count(r->left);
+      return 1 + CountInstructionImpl(r->left);
     case STAR:
-      return 2 + count(r->left);
+      return 2 + CountInstructionImpl(r->left);
     default:
       std::cerr << "Error: invalid regexp type." << std::endl;
       throw std::exception();
@@ -128,10 +136,10 @@ void Emit(Program &program, int &pc, RegexpPtr r) {
   }
 }
 
-void PrintProgram(Program &program) {
+void PrintProgram(const Program &program) {
   for (int idx = 0; idx < program.size(); ++idx) {
     auto &instr = program[idx];
-    std::cout << instr->to_string() << std::endl;
+    std::cout << instr->str() << std::endl;
   }
 }
 

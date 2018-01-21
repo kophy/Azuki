@@ -61,7 +61,7 @@ RegexpPtr ParseRegexp(const std::string &s) {
   ;
 }
 
-void PrintRegexHelper(int tab, RegexpPtr rp) {
+void PrintRegexpHelper(int tab, RegexpPtr rp) {
   std::cout << std::string(tab * 4, ' ');
   switch (rp->type) {
     case LIT:
@@ -69,35 +69,34 @@ void PrintRegexHelper(int tab, RegexpPtr rp) {
       break;
     case ALT:
       std::cout << "ALT" << std::endl;
-      PrintRegexHelper(tab + 1, rp->left);
-      PrintRegexHelper(tab + 1, rp->right);
+      PrintRegexpHelper(tab + 1, rp->left);
+      PrintRegexpHelper(tab + 1, rp->right);
       break;
     case CAT:
       std::cout << "CAT" << std::endl;
-      PrintRegexHelper(tab + 1, rp->left);
-      PrintRegexHelper(tab + 1, rp->right);
+      PrintRegexpHelper(tab + 1, rp->left);
+      PrintRegexpHelper(tab + 1, rp->right);
       break;
     case DOT:
       std::cout << "DOT" << std::endl;
-      PrintRegexHelper(tab + 1, rp->left);
       break;
     case PLUS:
       std::cout << "PLUS" << std::endl;
-      PrintRegexHelper(tab + 1, rp->left);
+      PrintRegexpHelper(tab + 1, rp->left);
       break;
     case QUEST:
       std::cout << "QUEST" << std::endl;
-      PrintRegexHelper(tab + 1, rp->left);
+      PrintRegexpHelper(tab + 1, rp->left);
       break;
     case STAR:
       std::cout << "STAR" << std::endl;
-      PrintRegexHelper(tab + 1, rp->left);
+      PrintRegexpHelper(tab + 1, rp->left);
       break;
     default:
       break;
   }
 }
 
-void PrintRegex(RegexpPtr rp) { PrintRegexHelper(0, rp); }
+void PrintRegexp(RegexpPtr rp) { PrintRegexpHelper(0, rp); }
 
 };  // namespace azuki

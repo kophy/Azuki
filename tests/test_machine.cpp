@@ -5,7 +5,9 @@ namespace azuki {
 
 Machine CreateMachineFromRegexp(std::shared_ptr<Regexp> r) {
   Program program = CompileRegex(r);
-  return Machine(program);
+  Machine m(program);
+  m.SetMatchBegin(true);
+  return m;
 }
 
 TEST(MachineTest, SingleChar) {

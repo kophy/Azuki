@@ -27,7 +27,7 @@ typedef struct Regexp {
 
 typedef std::shared_ptr<Regexp> RegexpPtr;
 
-void PrintRegex(RegexpPtr rp);
+void PrintRegexp(RegexpPtr rp);
 
 RegexpPtr ParseRegexp(const std::string &s);
 

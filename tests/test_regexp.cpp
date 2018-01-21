@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
 #include "regexp.h"
 
+#define DEBUG
+
 namespace azuki {
 
 bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
@@ -29,7 +31,8 @@ TEST(RegexpTest, SimpleChar) {
   std::shared_ptr<Regexp> r2(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  // TODO(problem!!!)
+  PrintRegexp(r1);
 #endif
 }
 
@@ -40,7 +43,7 @@ TEST(RegexpTest, SimpleCat) {
   r2->right.reset(new Regexp(LIT, 'b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  PrintRegexp(r1);
 #endif
 }
 
@@ -51,7 +54,7 @@ TEST(RegexpTest, SimpleDot) {
   r2->right.reset(new Regexp(LIT, 'b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  PrintRegexp(r1);
 #endif
 }
 
@@ -62,7 +65,7 @@ TEST(RegexTest, SimpleAlt) {
   r2->right.reset(new Regexp(LIT, 'b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  PrintRegexp(r1);
 #endif
 }
 
@@ -72,7 +75,7 @@ TEST(RegexTest, SimplePlus) {
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  PrintRegexp(r1);
 #endif
 }
 
@@ -82,7 +85,7 @@ TEST(RegexTest, SimpleQuest) {
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  PrintRegexp(r1);
 #endif
 }
 
@@ -92,7 +95,7 @@ TEST(RegexTest, SimpleStar) {
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  PrintProgram(r1);
+  PrintRegexp(r1);
 #endif
 }
 

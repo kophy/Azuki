@@ -8,6 +8,7 @@
 
 namespace azuki {
 
+// Instruction opcodes.
 enum Opcode {
   ANY,
   CHAR,
@@ -17,34 +18,26 @@ enum Opcode {
   JMP
 };
 
+// An instruction struct encodes information of one instruction, its index in
+// the program, its opcode and operands if required.
 struct Instruction {
   unsigned int idx;  // instruction index
   Opcode opcode;     // instruction type
-  char c;            // character to match (CHAR)
-  unsigned int dst;  // destination instruction index (SPLIT and JMP)
+  char c;            // character to match (only used in CHAR)
+  unsigned int dst;  // destination instruction index (used in SPLIT and JMP)
 
   Instruction(Opcode opcode = NIL) : opcode(opcode) {}
-  std::string to_string();
+  std::string str();
 };
 
 typedef std::shared_ptr<Instruction> InstrPtr;
 typedef std::vector<InstrPtr> Program;
 
-// Convenience functions to create different instructions.
-InstrPtr CreateAnyInstruction();
-InstrPtr CreateCharInstruction(char c);
-InstrPtr CreateMatchInstruction();
-InstrPtr CreateSplitInstruction(int dst);
-InstrPtr CreateJmpInstruction(int dst);
-
-// Count the number of instructions required to represent the regexp.
-int CountInstruction(RegexpPtr r);
-
 // Compile the regexp into a program.
 Program CompileRegex(RegexpPtr r);
 
-// Print the program (instruction addresses are replaced with ids).
-void PrintProgram(Program &program);
+// Print the program.
+void PrintProgram(const Program &program);
 
 };  // namespace azuki
 
