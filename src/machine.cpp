@@ -1,5 +1,5 @@
-#include <iostream>
 #include "machine.h"
+#include <iostream>
 
 namespace azuki {
 

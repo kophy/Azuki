@@ -88,8 +88,7 @@ Program CompileRegex(RegexpPtr r) {
   Emit(program, pc, r);
   program[pc] = CreateMatchInstruction();
 
-  for (int idx = 0; idx < program.size(); ++idx)
-    program[idx]->idx = idx;
+  for (int idx = 0; idx < program.size(); ++idx) program[idx]->idx = idx;
   return program;
 }
 

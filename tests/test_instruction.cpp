@@ -73,7 +73,7 @@ TEST(InstructionTest, SimpleQuest) {
 TEST(InstructionTest, SimpleStar) {
   std::shared_ptr<Regexp> r(new Regexp(STAR));
   r->left.reset(new Regexp(LIT, 'a'));
-  Program  program = CompileRegex(r);
+  Program program = CompileRegex(r);
   EXPECT_EQ(program.size(), 4);
 #ifdef DEBUG
   PrintProgram(program);

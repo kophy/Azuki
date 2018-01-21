@@ -1,55 +1,74 @@
-#include <boost/spirit/include/classic.hpp>
+#include <boost/fusion/adapted.hpp>
+#include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/include/qi.hpp>
 #include <iostream>
 #include "regexp.h"
 
 namespace azuki {
 
-using boost::spirit::classic::grammar;
-using boost::spirit::classic::rule;
+namespace ascii = boost::spirit::ascii;
+namespace phx = boost::phoenix;
+namespace qi = boost::spirit::qi;
 
-struct regexp_grammar : public grammar<regexp_grammar> {
-  struct print {
-    void operator()(const char *begin, const char *end) const {
-      std::cout << std::string(begin, end) << std::endl;
-    }
+Regexp CreateRegexp(RegexpType type, char c, const Regexp &left,
+                    const Regexp &right) {
+  Regexp r;
+  r.type = type;
+  r.c = c;
+  r.left = std::make_shared<Regexp>(left);
+  r.right = std::make_shared<Regexp>(right);
+  return r;
+}
 
-    void operator()(const double d) const { std::cout << d << std::endl; }
+template <typename Iterator>
+struct regexp_grammer : qi::grammar<Iterator, Regexp(), ascii::space_type> {
+  qi::rule<Iterator, Regexp(), ascii::space_type> regexp;
+  qi::rule<Iterator, Regexp(), ascii::space_type> alt;
+  qi::rule<Iterator, Regexp(), ascii::space_type> concat;
+  qi::rule<Iterator, Regexp(), ascii::space_type> repeat;
+  qi::rule<Iterator, Regexp(), ascii::space_type> single;
 
-    void operator()(const char c) const { std::cout << c << std::endl; }
-  };
-
-  template <typename Scanner>
-  struct definition {
-    rule<Scanner> alt, alt1, concat, repeat, single, line;
-
-    definition(const regexp_grammar &self) {
-      using namespace boost::spirit::classic;
-      line = alt;
-      alt = (concat >> '|' >> alt)[print()] | concat;
-      concat = +(repeat);
-      repeat = single;
-      single = alnum_p;
-    }
-
-    const rule<Scanner> &start() { return line; }
-  };
+  regexp_grammer() : regexp_grammer::base_type(regexp) {
+    using namespace qi;
+    regexp = alt[_val = _1];
+    alt = (single >> "|" >>
+           alt)[_val = phx::bind(CreateRegexp, ALT, ' ', _1, _2)] |
+          single[_val = _1];
+    single = +(alnum)[_val = Regexp(LIT)];
+  }
 };
 
 RegexpPtr ParseRegexp(const std::string &s) {
-  using namespace boost::spirit::classic;
-  regexp_grammar g;
-  parse_info<> pi = parse(s.c_str(), g, eol_p);
+  typedef std::string::const_iterator Iterator;
+  regexp_grammer<Iterator> g;
+  Regexp r;
 
-  if (pi.hit) {
-    if (pi.full)
-      std::cout << "parsing all data successfully" << std::endl;
-    else
-      std::cout << "parsing data partially" << std::endl;
-    std::cout << pi.length << " characters parsed" << std::endl;
-  } else {
-    std::cout << "parsing failed; stopped at '" << pi.stop << "'" << std::endl;
-  }
+  Iterator begin(s.begin()), end(s.end());
+  bool ok = qi::phrase_parse(begin, end, g, ascii::space, r);
+
+  std::cout << ok << std::endl;
+  // std::cout << std::string(begin, end) << std::endl;
+  PrintRegex(std::make_shared<Regexp>(r));
 
   return std::shared_ptr<Regexp>(nullptr);
-}  // namespace azuki
+}
+
+void PrintRegexHelper(int tab, RegexpPtr rp) {
+  std::cout << std::string(tab, ' ');
+  switch (rp->type) {
+    case LIT:
+      std::cout << "LIT" << std::endl;
+      break;
+    case ALT:
+      std::cout << "ALT" << std::endl;
+      PrintRegexHelper(1, rp->left);
+      PrintRegexHelper(1, rp->right);
+      break;
+    default:
+      break;
+  }
+}
+
+void PrintRegex(RegexpPtr rp) { PrintRegexHelper(0, rp); }
+
 };  // namespace azuki
