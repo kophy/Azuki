@@ -12,7 +12,7 @@ class Machine;
 
 class Thread {
  public:
-  Thread(Machine &machine, int pc) : machine(machine), pc(pc) {}
+  Thread(const Machine &machine, int pc) : machine(machine), pc(pc) {}
 
   // Return true if the thread runs one instruction and successfully
   // consumes the input character c.
@@ -21,7 +21,7 @@ class Thread {
   bool RunOneStep(char c);
 
  private:
-  Machine &machine;
+  const Machine &machine;
   int pc;
 };
 
@@ -39,23 +39,23 @@ class Machine {
   void SetMatchEnd(bool b) { match_end = b; }
 
   // Run program on input string s.
-  MatchStatus Run(const std::string &s);
+  MatchStatus Run(const std::string &s) const;
 
   // Add a thread to run in this round.
-  void AddReadyThread(Thread &&thread) { ready.push(thread); }
+  void AddReadyThread(Thread &&thread) const { ready.push(thread); }
 
   // Update match status.
-  void UpdateStatus(bool match) { status.match = match; }
+  void UpdateStatus(bool match) const { status.match = match; }
 
   // Fetch instruction by program counter(index).
   const InstrPtr FetchInstruction(int pc) const { return program[pc]; }
 
  private:
   const Program program;
-  std::queue<Thread> ready;     // keep threads to run in current round
-  MatchStatus status;           // keep regex match status
+  mutable std::queue<Thread> ready;     // keep threads to run in current round
+  mutable MatchStatus status;           // keep regex match status
 
-  bool match_begin, match_end;  // control positonal match
+  bool match_begin, match_end;          // control positonal match
 };
 
 };  // namespace azuki

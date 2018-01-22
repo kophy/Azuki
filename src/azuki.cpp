@@ -25,7 +25,7 @@ Machine CreateMachine(const std::string &e) {
   return m;
 }
 
-bool RegexSearch(Machine &m, const std::string &s) {
+bool RegexSearch(const Machine &m, const std::string &s) {
   return m.Run(s).match;
 }
 

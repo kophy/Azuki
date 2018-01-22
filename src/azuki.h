@@ -12,7 +12,7 @@ const char DOLLAR = '$';
 // Create machine from raw regular expression e.
 Machine CreateMachine(const std::string &e);
 
-bool RegexSearch(Machine &m, const std::string &s);
+bool RegexSearch(const Machine &m, const std::string &s);
 
 };  // namespace azuki
 

@@ -35,7 +35,7 @@ bool Thread::RunOneStep(char c) {
 Machine::Machine(const Program &program)
     : program(program), match_begin(false), match_end(false) {}
 
-MatchStatus Machine::Run(const std::string &s) {
+MatchStatus Machine::Run(const std::string &s) const {
   ready = std::queue<Thread>();
   status.match = false;
 
