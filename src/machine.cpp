@@ -42,7 +42,8 @@ MatchStatus Machine::Run(const std::string &s) {
   if (match_begin) ready.push(Thread(*this, 0));
 
   // Need an extra character to finish ready threads.
-  for (char c : s + " ") {
+  for (int i = 0; i <= s.size(); ++i) {
+    char c = (i < s.size())? s[i] : ' ';
     if (!match_begin) ready.push(Thread(*this, 0));
 
     std::queue<Thread> next;  // keep threads to run in next round
@@ -54,7 +55,7 @@ MatchStatus Machine::Run(const std::string &s) {
       // for next round.
       if (t.RunOneStep(c)) next.push(t);
       if (status.match) {
-        if (match_end) {
+        if (match_end && i != s.size()) {
           status.match = false;
         } else {
           return status;

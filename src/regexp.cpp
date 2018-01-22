@@ -18,12 +18,12 @@ RegexpPtr CreateRegexp(RegexpType type, char c, RegexpPtr lhs, RegexpPtr rhs) {
 }
 
 template <typename Iterator>
-struct regexp_grammer : qi::grammar<Iterator, RegexpPtr(), ascii::space_type> {
-  qi::rule<Iterator, RegexpPtr(), ascii::space_type> regexp;
-  qi::rule<Iterator, RegexpPtr(), ascii::space_type> alt;
-  qi::rule<Iterator, RegexpPtr(), ascii::space_type> concat;
-  qi::rule<Iterator, RegexpPtr(), ascii::space_type> repeat;
-  qi::rule<Iterator, RegexpPtr(), ascii::space_type> single;
+struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
+  qi::rule<Iterator, RegexpPtr()> regexp;
+  qi::rule<Iterator, RegexpPtr()> alt;
+  qi::rule<Iterator, RegexpPtr()> concat;
+  qi::rule<Iterator, RegexpPtr()> repeat;
+  qi::rule<Iterator, RegexpPtr()> single;
 
   regexp_grammer() : regexp_grammer::base_type(regexp) {
     using namespace qi;
@@ -44,7 +44,8 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr(), ascii::space_type> {
          "*")[_val = phx::bind(CreateRegexp, STAR, ' ', _1, nullptr)] |
         single[_val = _1];
     single =
-        alnum[_val = phx::bind(CreateRegexp, LIT, _1, nullptr, nullptr)] |
+        (alnum)[_val = phx::bind(CreateRegexp, LIT, _1, nullptr, nullptr)] |
+        (space)[_val = phx::bind(CreateRegexp, LIT, _1, nullptr, nullptr)] |
         char_('.')[_val = phx::bind(CreateRegexp, DOT, ' ', nullptr, nullptr)];
   }
 };

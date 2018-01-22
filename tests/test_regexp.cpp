@@ -1,8 +1,6 @@
 #include "gtest/gtest.h"
 #include "regexp.h"
 
-#define DEBUG
-
 namespace azuki {
 
 bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
@@ -26,12 +24,16 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
   return false;
 }
 
+TEST(RegexpTest, SimpleSpace) {
+  std::shared_ptr<Regexp> r1 = ParseRegexp("a b");
+  PrintRegexp(r1);
+}
+
 TEST(RegexpTest, SimpleChar) {
   std::shared_ptr<Regexp> r1 = ParseRegexp("a");
   std::shared_ptr<Regexp> r2(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
-  // TODO(problem!!!)
   PrintRegexp(r1);
 #endif
 }

@@ -2,6 +2,14 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
+add_executable(test_utility test_utility.cpp)
+target_link_libraries(test_utility
+  ${GTEST_BOTH_LIBRARIES}
+  utility
+)
+
+add_test(test_utility test_utility)
+
 add_executable(test_regexp test_regexp.cpp)
 target_link_libraries(test_regexp
   ${GTEST_BOTH_LIBRARIES}
@@ -28,12 +36,14 @@ target_link_libraries(test_machine
 
 add_test(test_machine test_machine)
 
-add_executable(test_full test_full.cpp)
-target_link_libraries(test_full
+add_executable(test_azuki test_azuki.cpp)
+target_link_libraries(test_azuki
   regexp
   instruction
   machine
+  utility
+  azuki
   ${GTEST_BOTH_LIBRARIES}
 )
 
-add_test(test_full test_full)
+add_test(test_azuki test_azuki)

@@ -17,13 +17,13 @@ enum RegexpType {
   STAR
 };
 
-typedef struct Regexp {
+struct Regexp {
   RegexpType type;
   char c;
   std::shared_ptr<Regexp> left, right;
 
   Regexp(RegexpType type, char c = ' ') : type(type), c(c) {}
-} Regexp;
+};
 
 typedef std::shared_ptr<Regexp> RegexpPtr;
 
