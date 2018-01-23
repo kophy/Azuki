@@ -4,13 +4,6 @@
 
 namespace azuki {
 
-// Convenience functions to create different instructions.
-InstrPtr CreateAnyInstruction();
-InstrPtr CreateCharInstruction(char c);
-InstrPtr CreateMatchInstruction();
-InstrPtr CreateSplitInstruction(int dst);
-InstrPtr CreateJmpInstruction(int dst);
-
 // Count the number of instructions required to represent the regexp.
 int CountInstruction(RegexpPtr r);
 
@@ -25,7 +18,7 @@ std::string Instruction::str() {
       ss << "ANY";
       break;
     case CHAR:
-      ss << "CHAR " << c;
+      ss << "CHAR '" << c << "''";
       break;
     case JMP:
       ss << "JMP I" << dst;

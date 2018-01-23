@@ -18,8 +18,7 @@ enum Opcode {
   JMP
 };
 
-// An instruction struct encodes information of one instruction, its index in
-// the program, its opcode and operands if required.
+// An instruction struct encodes information of an instruction.
 struct Instruction {
   unsigned int idx;  // instruction index
   Opcode opcode;     // instruction type
@@ -31,12 +30,20 @@ struct Instruction {
 };
 
 typedef std::shared_ptr<Instruction> InstrPtr;
+
+// Convenience functions to create different instructions.
+InstrPtr CreateAnyInstruction();
+InstrPtr CreateCharInstruction(char c);
+InstrPtr CreateMatchInstruction();
+InstrPtr CreateSplitInstruction(int dst);
+InstrPtr CreateJmpInstruction(int dst);
+
 typedef std::vector<InstrPtr> Program;
 
 // Compile the regexp into a program.
 Program CompileRegex(RegexpPtr r);
 
-// Print the program.
+// Print the program (for debug use).
 void PrintProgram(const Program &program);
 
 };  // namespace azuki

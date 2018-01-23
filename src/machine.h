@@ -10,6 +10,7 @@ namespace azuki {
 
 class Machine;
 
+// TODO: add comment
 class Thread {
  public:
   Thread(const Machine &machine, int pc) : machine(machine), pc(pc) {}

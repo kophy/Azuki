@@ -10,10 +10,53 @@ namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 namespace qi = boost::spirit::qi;
 
-RegexpPtr CreateRegexp(RegexpType type, char c, RegexpPtr lhs, RegexpPtr rhs) {
+RegexpPtr CreateALTRegexp(RegexpPtr left, RegexpPtr right) {
+  RegexpPtr rp(new Regexp(ALT));
+  rp->left = left;
+  rp->right = right;
+  return rp;
+}
+
+RegexpPtr CreateCATRegexp(RegexpPtr left, RegexpPtr right) {
+  RegexpPtr rp(new Regexp(CAT));
+  rp->left = left;
+  rp->right = right;
+  return rp;
+}
+
+RegexpPtr CreateDOTRegexp() {
+  RegexpPtr rp(new Regexp(DOT));
+  return rp;
+}
+
+RegexpPtr CreateLITRegexp(char c) {
+  RegexpPtr rp(new Regexp(LIT, c));
+  return rp;
+}
+
+RegexpPtr CreatePLUSRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp(PLUS));
+  rp->left = left;
+  return rp;
+}
+
+RegexpPtr CreateQUESTRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp(QUEST));
+  rp->left = left;
+  return rp;
+}
+
+RegexpPtr CreateSTARRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp(STAR));
+  rp->left = left;
+  return rp;
+}
+
+RegexpPtr CreateRegexp(RegexpType type, char c, RegexpPtr left,
+                       RegexpPtr right) {
   RegexpPtr rp(new Regexp(type, c));
-  rp->left = lhs;
-  rp->right = rhs;
+  rp->left = left;
+  rp->right = right;
   return rp;
 }
 
@@ -27,42 +70,33 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
 
   regexp_grammer() : regexp_grammer::base_type(regexp) {
     using namespace qi;
+
     regexp = alt[_val = _1];
-    alt = (concat >> "|" >>
-           alt)[_val = phx::bind(CreateRegexp, ALT, ' ', _1, _2)] |
+    alt = (concat >> "|" >> alt)[_val = phx::bind(CreateALTRegexp, _1, _2)] |
           concat[_val = _1];
-    concat =
-        (repeat >> concat)[_val = phx::bind(CreateRegexp, CAT, ' ', _1, _2)] |
-        repeat[_val = _1];
-    repeat =
-        (single >> ",")[_val = phx::bind(CreateRegexp, DOT, ' ', _1, nullptr)] |
-        (single >>
-         "+")[_val = phx::bind(CreateRegexp, PLUS, ' ', _1, nullptr)] |
-        (single >>
-         "?")[_val = phx::bind(CreateRegexp, QUEST, ' ', _1, nullptr)] |
-        (single >>
-         "*")[_val = phx::bind(CreateRegexp, STAR, ' ', _1, nullptr)] |
-        single[_val = _1];
-    single =
-        (alnum)[_val = phx::bind(CreateRegexp, LIT, _1, nullptr, nullptr)] |
-        (space)[_val = phx::bind(CreateRegexp, LIT, _1, nullptr, nullptr)] |
-        char_('.')[_val = phx::bind(CreateRegexp, DOT, ' ', nullptr, nullptr)];
+    concat = (repeat >> concat)[_val = phx::bind(CreateCATRegexp, _1, _2)] |
+             repeat[_val = _1];
+    repeat = (single >> "+")[_val = phx::bind(CreatePLUSRegexp, _1)] |
+             (single >> "?")[_val = phx::bind(CreateQUESTRegexp, _1)] |
+             (single >> "*")[_val = phx::bind(CreateSTARRegexp, _1)] |
+             single[_val = _1];
+    single = (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
+             (space)[_val = phx::bind(CreateLITRegexp, _1)] |
+             char_('.')[_val = CreateDOTRegexp()];
   }
 };
 
 RegexpPtr ParseRegexp(const std::string &s) {
   typedef std::string::const_iterator Iterator;
   regexp_grammer<Iterator> g;
-  RegexpPtr r;
+  RegexpPtr rp;
 
-  Iterator begin(s.begin()), end(s.end());
-  bool ok = qi::phrase_parse(begin, end, g, ascii::space, r);
-  if (ok) return r;
+  bool ok = qi::phrase_parse(s.begin(), s.end(), g, ascii::space, rp);
+  if (ok && IsValidRegexp(rp)) return rp;
   throw std::exception();
-  ;
 }
 
-void PrintRegexpHelper(int tab, RegexpPtr rp) {
+void PrintRegexpImpl(int tab, RegexpPtr rp) {
   std::cout << std::string(tab * 4, ' ');
   switch (rp->type) {
     case LIT:
@@ -70,34 +104,37 @@ void PrintRegexpHelper(int tab, RegexpPtr rp) {
       break;
     case ALT:
       std::cout << "ALT" << std::endl;
-      PrintRegexpHelper(tab + 1, rp->left);
-      PrintRegexpHelper(tab + 1, rp->right);
+      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(tab + 1, rp->right);
       break;
     case CAT:
       std::cout << "CAT" << std::endl;
-      PrintRegexpHelper(tab + 1, rp->left);
-      PrintRegexpHelper(tab + 1, rp->right);
+      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(tab + 1, rp->right);
       break;
     case DOT:
       std::cout << "DOT" << std::endl;
       break;
     case PLUS:
       std::cout << "PLUS" << std::endl;
-      PrintRegexpHelper(tab + 1, rp->left);
+      PrintRegexpImpl(tab + 1, rp->left);
       break;
     case QUEST:
       std::cout << "QUEST" << std::endl;
-      PrintRegexpHelper(tab + 1, rp->left);
+      PrintRegexpImpl(tab + 1, rp->left);
       break;
     case STAR:
       std::cout << "STAR" << std::endl;
-      PrintRegexpHelper(tab + 1, rp->left);
+      PrintRegexpImpl(tab + 1, rp->left);
       break;
     default:
       break;
   }
 }
 
-void PrintRegexp(RegexpPtr rp) { PrintRegexpHelper(0, rp); }
+void PrintRegexp(RegexpPtr rp) { PrintRegexpImpl(0, rp); }
+
+// TODO: add serious check
+bool IsValidRegexp(RegexpPtr rp) { return true; }
 
 };  // namespace azuki
