@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "machine.h"
 
-namespace azuki {
+namespace Azuki {
 
 Machine CreateMachineFromRegexp(std::shared_ptr<Regexp> r) {
   Program program = CompileRegex(r);
@@ -102,4 +102,4 @@ TEST(MachineTest, SimpleParen) {
   EXPECT_FALSE(m.Run("baac").match);
 }
 
-};  // namespace azuki
+};  // namespace Azuki

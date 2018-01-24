@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include "azuki.h"
 
-namespace azuki {
+namespace Azuki {
 
 TEST(AzukiTest, SimpleBeginAnchor) {
   Machine m = CreateMachine("^a+b");
@@ -45,4 +45,4 @@ TEST(AzukiTest, GreedyCapture) {
   EXPECT_EQ(v[0], "abbb");
 }
 
-};  // namespace azuki
+};  // namespace Azuki

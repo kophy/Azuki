@@ -5,7 +5,7 @@
 #include <vector>
 #include "machine.h"
 
-namespace azuki {
+namespace Azuki {
 
 // Positonal anchors for the begin and end of string.
 const char CARET = '^';
@@ -22,6 +22,6 @@ bool RegexSearch(const Machine &m, const std::string &s);
 bool RegexSearch(const Machine &m, const std::string &s,
                  std::vector<std::string> &v);
 
-};  // namespace azuki
+};  // namespace Azuki
 
 #endif

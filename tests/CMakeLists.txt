@@ -21,15 +21,14 @@ add_test(test_regexp test_regexp)
 
 add_executable(test_instruction test_instruction.cpp)
 target_link_libraries(test_instruction
-  instruction
   ${GTEST_BOTH_LIBRARIES}
+  instruction
 )
 
 add_test(test_instruction test_instruction)
 
 add_executable(test_machine test_machine.cpp)
 target_link_libraries(test_machine
-  instruction
   machine
   ${GTEST_BOTH_LIBRARIES}
 )
@@ -38,10 +37,6 @@ add_test(test_machine test_machine)
 
 add_executable(test_azuki test_azuki.cpp)
 target_link_libraries(test_azuki
-  regexp
-  instruction
-  machine
-  utility
   azuki
   ${GTEST_BOTH_LIBRARIES}
 )

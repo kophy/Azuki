@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace azuki {
+namespace Azuki {
 
 enum RegexpType { ALT, CAT, DOT, LIT, PAREN, PLUS, QUEST, STAR };
 
@@ -42,6 +42,6 @@ void PrintRegexp(RegexpPtr rp);
 // Check whether the Regexp is valid.
 bool IsValidRegexp(RegexpPtr rp);
 
-};  // namespace azuki
+};  // namespace Azuki
 
 #endif

@@ -4,7 +4,7 @@
 #include "regex.h"
 #include "utility.h"
 
-namespace azuki {
+namespace Azuki {
 
 Machine CreateMachine(const std::string &e) {
   bool match_begin = StartsWith(e, CARET);
@@ -38,4 +38,4 @@ bool RegexSearch(const Machine &m, const std::string &s,
   return true;
 }
 
-};  // namespace azuki
+};  // namespace Azuki

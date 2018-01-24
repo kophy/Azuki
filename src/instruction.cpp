@@ -2,7 +2,7 @@
 #include <sstream>
 #include "instruction.h"
 
-namespace azuki {
+namespace Azuki {
 
 // Count the number of instructions required to represent the regexp.
 int CountInstruction(RegexpPtr r);
@@ -151,4 +151,4 @@ void PrintProgram(const Program &program) {
   }
 }
 
-};  // namespace azuki
+};  // namespace Azuki

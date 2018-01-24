@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "regexp.h"
 
-namespace azuki {
+namespace Azuki {
 
 bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
   if (rp1->type != rp2->type) return false;
@@ -107,4 +107,4 @@ TEST(RegexTest, SimpleParen) {
 #endif
 }
 
-};  // namespace azuki
+};  // namespace Azuki

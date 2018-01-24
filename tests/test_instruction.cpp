@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include "instruction.h"
 
-namespace azuki {
+namespace Azuki {
 
 TEST(InstructionTest, InvalidInstruction) {
   Instruction instr(Opcode(JMP + 1));
@@ -90,4 +90,4 @@ TEST(InstructionTest, SimpleParen) {
 #endif
 }
 
-};  // namespace azuki
+};  // namespace Azuki

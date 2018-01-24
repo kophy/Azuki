@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "utility.h"
 
-namespace azuki {
+namespace Azuki {
 
 TEST(UtilityTest, StartsWith) {
   EXPECT_TRUE(StartsWith("abc", "a"));
@@ -17,4 +17,4 @@ TEST(UtilityTest, EndsWith) {
   EXPECT_FALSE(EndsWith("abc", "dabc"));
 }
 
-};  // namespace azuki
+};  // namespace Azuki

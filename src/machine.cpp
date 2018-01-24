@@ -1,7 +1,7 @@
 #include <iostream>
 #include "machine.h"
 
-namespace azuki {
+namespace Azuki {
 
 bool Thread::RunOneStep(std::string::const_iterator sp, bool capture) {
   InstrPtr instr = machine.FetchInstruction(pc++);
@@ -87,4 +87,4 @@ void Machine::UpdateStatus(const MatchStatus &status_) const {
   status = status_;
 }
 
-};  // namespace azuki
+};  // namespace Azuki

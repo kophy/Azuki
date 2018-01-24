@@ -2,7 +2,7 @@
 #include <sstream>
 #include "utility"
 
-namespace azuki {
+namespace Azuki {
 
 bool StartsWith(const std::string &s, char prefix) {
   return s.size() && s.front() == prefix;
@@ -22,4 +22,4 @@ bool EndsWith(const std::string &s, const std::string &suffix) {
   return std::equal(suffix.rbegin(), suffix.rend(), s.rbegin());
 }
 
-};  // namespace azuki
+};  // namespace Azuki

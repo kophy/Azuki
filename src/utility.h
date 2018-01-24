@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace azuki {
+namespace Azuki {
 
 // Check whether string s starts with prefix.
 bool StartsWith(const std::string &s, char prefix);
@@ -13,6 +13,6 @@ bool StartsWith(const std::string &s, const std::string &prefix);
 bool EndsWith(const std::string &s, char suffix);
 bool EndsWith(const std::string &s, const std::string &suffix);
 
-};  // namespace azuki
+};  // namespace Azuki
 
 #endif

@@ -4,7 +4,7 @@
 #include <iostream>
 #include "regexp.h"
 
-namespace azuki {
+namespace Azuki {
 
 namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
@@ -169,4 +169,4 @@ bool IsValidRegexp(RegexpPtr rp) {
   return false;
 }
 
-};  // namespace azuki
+};  // namespace Azuki

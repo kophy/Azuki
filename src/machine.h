@@ -7,7 +7,7 @@
 #include <vector>
 #include "instruction.h"
 
-namespace azuki {
+namespace Azuki {
 
 // Hold result of regexp match.
 struct MatchStatus {
@@ -68,6 +68,6 @@ class Machine {
   bool match_begin, match_end;       // flags to control positonal match
 };
 
-};  // namespace azuki
+};  // namespace Azuki
 
 #endif

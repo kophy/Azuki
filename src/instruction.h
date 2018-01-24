@@ -6,7 +6,7 @@
 #include <vector>
 #include "regexp.h"
 
-namespace azuki {
+namespace Azuki {
 
 // Instruction opcodes.
 enum Opcode { ANY, CHAR, MATCH, SAVE, SPLIT, JMP };
@@ -41,6 +41,6 @@ Program CompileRegex(RegexpPtr r);
 // Print the program (for debug use).
 void PrintProgram(const Program &program);
 
-};  // namespace azuki
+};  // namespace Azuki
 
 #endif
