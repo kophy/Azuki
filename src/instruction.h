@@ -9,23 +9,17 @@
 namespace azuki {
 
 // Instruction opcodes.
-enum Opcode {
-  ANY,
-  CHAR,
-  MATCH,
-  NIL,  // suggest the instruction is invalid
-  SPLIT,
-  JMP
-};
+enum Opcode { ANY, CHAR, MATCH, SAVE, SPLIT, JMP };
 
-// An instruction struct encodes information of an instruction.
+// An instruction struct encodes information to run an instruction.
 struct Instruction {
   unsigned int idx;  // instruction index
   Opcode opcode;     // instruction type
   char c;            // character to match (only used in CHAR)
   unsigned int dst;  // destination instruction index (used in SPLIT and JMP)
+  unsigned int slot; // slot to save string pointer
 
-  Instruction(Opcode opcode = NIL) : opcode(opcode) {}
+  Instruction(Opcode opcode) : opcode(opcode) {}
   std::string str();
 };
 
@@ -35,6 +29,7 @@ typedef std::shared_ptr<Instruction> InstrPtr;
 InstrPtr CreateAnyInstruction();
 InstrPtr CreateCharInstruction(char c);
 InstrPtr CreateMatchInstruction();
+InstrPtr CreateSaveInstruction(int slot);
 InstrPtr CreateSplitInstruction(int dst);
 InstrPtr CreateJmpInstruction(int dst);
 

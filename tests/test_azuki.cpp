@@ -28,4 +28,13 @@ TEST(AzukiTest, SimpleBothAnchor) {
   EXPECT_FALSE(RegexSearch(m, "aa"));
 }
 
+TEST(AzukiTest, SimpleCapture) {
+  Machine m = CreateMachine("^(ab)+c(ef)$");
+  std::vector<std::string> v;
+  EXPECT_TRUE(RegexMatch(m, "ababcef", v));
+  EXPECT_EQ(v.size(), 2);
+  EXPECT_EQ(v[0], "ab");
+  EXPECT_EQ(v[1], "ef");
+}
+
 };  // namespace azuki

@@ -90,4 +90,16 @@ TEST(MachineTest, SimpleStar) {
   EXPECT_FALSE(m.Run("cab").match);
 }
 
+TEST(MachineTest, SimpleParen) {
+  // match "(a+)"
+  std::shared_ptr<Regexp> r(new Regexp(PAREN));
+  r->left.reset(new Regexp(PLUS));
+  r->left->left.reset(new Regexp(LIT, 'a'));
+  Machine m = CreateMachineFromRegexp(r);
+  EXPECT_TRUE(m.Run("a").match);
+  EXPECT_TRUE(m.Run("aa").match);
+  EXPECT_FALSE(m.Run("b").match);
+  EXPECT_FALSE(m.Run("baac").match);
+}
+
 };  // namespace azuki

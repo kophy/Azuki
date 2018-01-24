@@ -34,6 +34,12 @@ RegexpPtr CreateLITRegexp(char c) {
   return rp;
 }
 
+RegexpPtr CreatePARENRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp(PAREN));
+  rp->left = left;
+  return rp;
+}
+
 RegexpPtr CreatePLUSRegexp(RegexpPtr left) {
   RegexpPtr rp(new Regexp(PLUS));
   rp->left = left;
@@ -80,7 +86,8 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
              (single >> "?")[_val = phx::bind(CreateQUESTRegexp, _1)] |
              (single >> "*")[_val = phx::bind(CreateSTARRegexp, _1)] |
              single[_val = _1];
-    single = (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
+    single = ("(" >> regexp >> ")")[_val = phx::bind(CreatePARENRegexp, _1)] |
+             (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
              (space)[_val = phx::bind(CreateLITRegexp, _1)] |
              char_('.')[_val = CreateDOTRegexp()];
   }
@@ -97,7 +104,7 @@ RegexpPtr ParseRegexp(const std::string &s) {
 }
 
 void PrintRegexpImpl(int tab, RegexpPtr rp) {
-  std::cout << std::string(tab * 4, ' ');
+  std::cout << std::string(tab * 2, ' ');
   switch (rp->type) {
     case LIT:
       std::cout << "LIT " << rp->c << std::endl;
@@ -114,6 +121,10 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
       break;
     case DOT:
       std::cout << "DOT" << std::endl;
+      break;
+    case PAREN:
+      std::cout << "PAREN" << std::endl;
+      PrintRegexpImpl(tab + 1, rp->left);
       break;
     case PLUS:
       std::cout << "PLUS" << std::endl;

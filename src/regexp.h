@@ -28,6 +28,7 @@ RegexpPtr CreateALTRegexp(RegexpPtr left, RegexpPtr right);
 RegexpPtr CreateCATRegexp(RegexpPtr left, RegexpPtr right);
 RegexpPtr CreateDOTRegexp();
 RegexpPtr CreateLITRegexp(char c);
+RegexpPtr CreatePARENRegexp(RegexpPtr left);
 RegexpPtr CreatePLUSRegexp(RegexpPtr left);
 RegexpPtr CreateQUESTRegexp(RegexpPtr left);
 RegexpPtr CreateSTARRegexp(RegexpPtr left);

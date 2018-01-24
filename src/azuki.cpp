@@ -11,8 +11,8 @@ Machine CreateMachine(const std::string &e) {
   bool match_end = EndsWith(e, DOLLAR);
 
   // Extract positional anchors.
-  int begin = match_begin? 1 : 0;
-  int end = match_end? e.size() - 1 : e.size();
+  int begin = match_begin ? 1 : 0;
+  int end = match_end ? e.size() - 1 : e.size();
   std::string input = e.substr(begin, end);
 
   RegexpPtr r = ParseRegexp(input);
@@ -26,7 +26,17 @@ Machine CreateMachine(const std::string &e) {
 }
 
 bool RegexSearch(const Machine &m, const std::string &s) {
-  return m.Run(s).match;
+  auto status = m.Run(s);
+  return status.match;
+}
+
+bool RegexMatch(const Machine &m, const std::string &s,
+                std::vector<std::string> &v) {
+  auto status = m.Run(s);
+  if (!status.match) return false;
+  for (int i = 0; i < status.saved.size(); i += 2)
+    v.push_back(std::string(status.saved[i], status.saved[i + 1]));
+  return true;
 }
 
 };  // namespace azuki

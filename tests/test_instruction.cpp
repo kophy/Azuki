@@ -5,7 +5,7 @@
 namespace azuki {
 
 TEST(InstructionTest, InvalidInstruction) {
-  Instruction instr;
+  Instruction instr(Opcode(JMP + 1));
   EXPECT_THROW(instr.str(), std::exception);
 }
 
@@ -72,6 +72,16 @@ TEST(InstructionTest, SimpleQuest) {
 
 TEST(InstructionTest, SimpleStar) {
   std::shared_ptr<Regexp> r(new Regexp(STAR));
+  r->left.reset(new Regexp(LIT, 'a'));
+  Program program = CompileRegex(r);
+  EXPECT_EQ(program.size(), 4);
+#ifdef DEBUG
+  PrintProgram(program);
+#endif
+}
+
+TEST(InstructionTest, SimpleParen) {
+  std::shared_ptr<Regexp> r(new Regexp(PAREN));
   r->left.reset(new Regexp(LIT, 'a'));
   Program program = CompileRegex(r);
   EXPECT_EQ(program.size(), 4);

@@ -12,6 +12,7 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
              IsEqualRegexp(rp1->right, rp2->right);
     case DOT:
       return true;
+    case PAREN:
     case PLUS:
     case QUEST:
     case STAR:
@@ -22,11 +23,6 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
       return false;
   }
   return false;
-}
-
-TEST(RegexpTest, SimpleSpace) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("a b");
-  PrintRegexp(r1);
 }
 
 TEST(RegexpTest, SimpleChar) {
@@ -99,6 +95,21 @@ TEST(RegexTest, SimpleStar) {
 #ifdef DEBUG
   PrintRegexp(r1);
 #endif
+}
+
+TEST(RegexTest, SimpleParen) {
+  std::shared_ptr<Regexp> r1 = ParseRegexp("(a)");
+  std::shared_ptr<Regexp> r2(new Regexp(PAREN));
+  r2->left.reset(new Regexp(LIT, 'a'));
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, NestedParen) {
+  std::shared_ptr<Regexp> r1 = ParseRegexp("((a+)d(cd)?)");
+  PrintRegexp(r1);
 }
 
 };  // namespace azuki

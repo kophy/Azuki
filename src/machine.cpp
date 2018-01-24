@@ -3,7 +3,7 @@
 
 namespace azuki {
 
-bool Thread::RunOneStep(char c) {
+bool Thread::RunOneStep(std::string::const_iterator sp) {
   InstrPtr instr = machine.FetchInstruction(pc++);
 
 #if DEBUG
@@ -14,16 +14,22 @@ bool Thread::RunOneStep(char c) {
     case ANY:
       return true;
     case CHAR:
-      return (instr->c == c);
+      return (instr->c == *sp);
     case JMP:
-      machine.AddReadyThread(Thread(machine, instr->dst));
+      machine.AddReadyThread(Thread(machine, instr->dst, saved));
       break;
     case MATCH:
       machine.UpdateStatus(true);
       break;
+    case SAVE:
+      if (saved.size() <= instr->slot)
+        saved.resize(instr->slot + 1);
+      saved[instr->slot] = sp;
+      machine.AddReadyThread(Thread(machine, pc, saved));
+      break;
     case SPLIT:
-      machine.AddReadyThread(Thread(machine, pc));
-      machine.AddReadyThread(Thread(machine, instr->dst));
+      machine.AddReadyThread(Thread(machine, pc, saved));
+      machine.AddReadyThread(Thread(machine, instr->dst, saved));
       break;
     default:
       std::cerr << "Error: invalid instruction type." << std::endl;
@@ -43,7 +49,7 @@ MatchStatus Machine::Run(const std::string &s) const {
 
   // Need an extra character to finish ready threads.
   for (int i = 0; i <= s.size(); ++i) {
-    char c = (i < s.size())? s[i] : ' ';
+    auto sp = s.begin() + i;
     if (!match_begin) ready.push(Thread(*this, 0));
 
     std::queue<Thread> next;  // keep threads to run in next round
@@ -53,11 +59,12 @@ MatchStatus Machine::Run(const std::string &s) const {
 
       // If the thread successfully consumes the character, we need to save it
       // for next round.
-      if (t.RunOneStep(c)) next.push(t);
+      if (t.RunOneStep(sp)) next.push(t);
       if (status.match) {
         if (match_end && i != s.size()) {
           status.match = false;
         } else {
+          status.saved = t.GetSaved();
           return status;
         }
       }
