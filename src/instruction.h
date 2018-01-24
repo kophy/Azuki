@@ -13,17 +13,18 @@ enum Opcode { ANY, CHAR, MATCH, SAVE, SPLIT, JMP };
 
 // An instruction struct encodes information to run an instruction.
 struct Instruction {
-  unsigned int idx;  // instruction index
-  Opcode opcode;     // instruction type
-  char c;            // character to match (only used in CHAR)
-  unsigned int dst;  // destination instruction index (used in SPLIT and JMP)
-  unsigned int slot; // slot to save string pointer
+  unsigned int idx;   // instruction index
+  Opcode opcode;      // instruction type
+  char c;             // character to match (only used in CHAR)
+  unsigned int dst;   // destination instruction index (used in SPLIT and JMP)
+  unsigned int slot;  // slot to save string pointer
 
   Instruction(Opcode opcode) : opcode(opcode) {}
   std::string str();
 };
 
 typedef std::shared_ptr<Instruction> InstrPtr;
+typedef std::vector<InstrPtr> Program;
 
 // Convenience functions to create different instructions.
 InstrPtr CreateAnyInstruction();
@@ -32,8 +33,6 @@ InstrPtr CreateMatchInstruction();
 InstrPtr CreateSaveInstruction(int slot);
 InstrPtr CreateSplitInstruction(int dst);
 InstrPtr CreateJmpInstruction(int dst);
-
-typedef std::vector<InstrPtr> Program;
 
 // Compile the regexp into a program.
 Program CompileRegex(RegexpPtr r);

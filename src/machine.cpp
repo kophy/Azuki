@@ -16,20 +16,21 @@ bool Thread::RunOneStep(std::string::const_iterator sp) {
     case CHAR:
       return (instr->c == *sp);
     case JMP:
-      machine.AddReadyThread(Thread(machine, instr->dst, saved));
+      machine.AddReadyThread(Thread(machine, instr->dst, status));
       break;
     case MATCH:
-      machine.UpdateStatus(true);
+      status.match = true;
+      machine.UpdateStatus(status);
       break;
     case SAVE:
-      if (saved.size() <= instr->slot)
-        saved.resize(instr->slot + 1);
-      saved[instr->slot] = sp;
-      machine.AddReadyThread(Thread(machine, pc, saved));
+      if (status.saved.size() <= instr->slot)
+        status.saved.resize(instr->slot + 1);
+      status.saved[instr->slot] = sp;
+      machine.AddReadyThread(Thread(machine, pc, status));
       break;
     case SPLIT:
-      machine.AddReadyThread(Thread(machine, pc, saved));
-      machine.AddReadyThread(Thread(machine, instr->dst, saved));
+      machine.AddReadyThread(Thread(machine, pc, status));
+      machine.AddReadyThread(Thread(machine, instr->dst, status));
       break;
     default:
       std::cerr << "Error: invalid instruction type." << std::endl;
@@ -41,7 +42,17 @@ bool Thread::RunOneStep(std::string::const_iterator sp) {
 Machine::Machine(const Program &program)
     : program(program), match_begin(false), match_end(false) {}
 
-MatchStatus Machine::Run(const std::string &s) const {
+Machine &Machine::SetMatchBegin(bool b) {
+  match_begin = b;
+  return *this;
+}
+
+Machine &Machine::SetMatchEnd(bool b) {
+  match_end = b;
+  return *this;
+}
+
+MatchStatus Machine::Run(const std::string &s, bool capture) const {
   ready = std::queue<Thread>();
   status.match = false;
 
@@ -64,7 +75,6 @@ MatchStatus Machine::Run(const std::string &s) const {
         if (match_end && i != s.size()) {
           status.match = false;
         } else {
-          status.saved = t.GetSaved();
           return status;
         }
       }
@@ -72,6 +82,10 @@ MatchStatus Machine::Run(const std::string &s) const {
     ready = std::move(next);
   }
   return status;
+}
+
+void Machine::UpdateStatus(const MatchStatus &status_) const {
+  status = status_;
 }
 
 };  // namespace azuki

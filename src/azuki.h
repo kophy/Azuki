@@ -10,7 +10,7 @@ namespace azuki {
 const char CARET = '^';
 const char DOLLAR = '$';
 
-// Create machine from raw regular expression e.
+// Create machine from raw regular expression.
 Machine CreateMachine(const std::string &e);
 
 bool RegexSearch(const Machine &m, const std::string &s);

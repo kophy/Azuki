@@ -9,8 +9,7 @@ bool StartsWith(const std::string &s, char prefix) {
 }
 
 bool StartsWith(const std::string &s, const std::string &prefix) {
-  if (s.size() < prefix.size())
-    return false;
+  if (s.size() < prefix.size()) return false;
   return std::equal(prefix.begin(), prefix.end(), s.begin());
 }
 
@@ -19,8 +18,7 @@ bool EndsWith(const std::string &s, char suffix) {
 }
 
 bool EndsWith(const std::string &s, const std::string &suffix) {
-  if (s.size() < suffix.size())
-    return false;
+  if (s.size() < suffix.size()) return false;
   return std::equal(suffix.rbegin(), suffix.rend(), s.rbegin());
 }
 
