@@ -145,7 +145,25 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
 
 void PrintRegexp(RegexpPtr rp) { PrintRegexpImpl(0, rp); }
 
-// TODO: add serious check
-bool IsValidRegexp(RegexpPtr rp) { return true; }
+bool IsValidRegexp(RegexpPtr rp) {
+  if (rp.get()) {
+    switch (rp->type) {
+      case ALT:
+      case CAT:
+        return IsValidRegexp(rp->left) && IsValidRegexp(rp->right);
+      case LIT:
+      case DOT:
+        return true;
+      case PAREN:
+      case PLUS:
+      case QUEST:
+      case STAR:
+        return IsValidRegexp(rp->left);
+      default:
+        break;
+    }
+  }
+  return false;
+}
 
 };  // namespace azuki

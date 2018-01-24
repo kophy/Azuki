@@ -33,7 +33,7 @@ RegexpPtr CreatePLUSRegexp(RegexpPtr left);
 RegexpPtr CreateQUESTRegexp(RegexpPtr left);
 RegexpPtr CreateSTARRegexp(RegexpPtr left);
 
-// Build Regexp representation from raw regular expression s.
+// Build Regexp representation from raw regular expression.
 RegexpPtr ParseRegexp(const std::string &s);
 
 // Print the regexp (for debug use).
