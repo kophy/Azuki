@@ -10,18 +10,17 @@ Machine CreateMachine(const std::string &e) {
   bool match_begin = StartsWith(e, CARET);
   bool match_end = EndsWith(e, DOLLAR);
 
-  // Extract positional anchors.
+  // Remove positional anchors if they exist.
   int begin = match_begin ? 1 : 0;
   int end = match_end ? e.size() - 1 : e.size();
   std::string input = e.substr(begin, end);
 
-  RegexpPtr r = ParseRegexp(input);
-  Program p = CompileRegex(r);
+  // Create machine with program and positonal match flags.
+  RegexpPtr rp = ParseRegexp(input);
+  Program program = CompileRegex(rp);
 
-  Machine m(p);
-  m.SetMatchBegin(match_begin);
-  m.SetMatchEnd(match_end);
-
+  Machine m(program);
+  m.SetMatchBegin(match_begin).SetMatchEnd(match_end);
   return m;
 }
 
@@ -30,8 +29,8 @@ bool RegexSearch(const Machine &m, const std::string &s) {
   return status.match;
 }
 
-bool RegexMatch(const Machine &m, const std::string &s,
-                std::vector<std::string> &v) {
+bool RegexSearch(const Machine &m, const std::string &s,
+                 std::vector<std::string> &v) {
   auto status = m.Run(s);
   if (!status.match) return false;
   for (int i = 0; i < status.saved.size(); i += 2)

@@ -26,8 +26,13 @@ bool Thread::RunOneStep(std::string::const_iterator sp, bool capture) {
       machine.AddReadyThread(Thread(machine, pc, status));
       break;
     case SPLIT:
-      machine.AddReadyThread(Thread(machine, pc, status));
-      machine.AddReadyThread(Thread(machine, instr->dst, status));
+      if (instr->greedy) {
+        machine.AddReadyThread(Thread(machine, instr->dst, status));
+        machine.AddReadyThread(Thread(machine, pc, status));
+      } else {
+        machine.AddReadyThread(Thread(machine, pc, status));
+        machine.AddReadyThread(Thread(machine, instr->dst, status));
+      }
       break;
     default:
       throw std::runtime_error("Unexpected instruction opcode.");
@@ -70,8 +75,6 @@ MatchStatus Machine::Run(const std::string &s, bool capture) const {
       if (status.match) {
         if (match_end && i != s.size()) {
           status.match = false;
-        } else {
-          return status;
         }
       }
     }

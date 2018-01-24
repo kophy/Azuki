@@ -54,9 +54,10 @@ InstrPtr CreateSaveInstruction(int slot) {
   return rp;
 }
 
-InstrPtr CreateSplitInstruction(int dst) {
+InstrPtr CreateSplitInstruction(int dst, bool greedy) {
   InstrPtr instr(new Instruction(SPLIT));
   instr->dst = dst;
+  instr->greedy = greedy;
   return instr;
 }
 
@@ -126,7 +127,7 @@ void Emit(Program &program, int &pc, int &slot, RegexpPtr r) {
   } else if (r->type == PLUS) {
     int current_pc = pc;
     Emit(program, pc, slot, r->left);
-    program[pc] = CreateSplitInstruction(pc + 2);
+    program[pc] = CreateSplitInstruction(pc + 2, true);
     ++pc;
     program[pc++] = CreateJmpInstruction(current_pc);
   } else if (r->type == QUEST) {
@@ -137,7 +138,7 @@ void Emit(Program &program, int &pc, int &slot, RegexpPtr r) {
     int split_pc = pc++;
     Emit(program, pc, slot, r->left);
     program[pc++] = CreateJmpInstruction(split_pc);
-    program[split_pc] = CreateSplitInstruction(pc);
+    program[split_pc] = CreateSplitInstruction(pc, true);
   } else {
     throw std::runtime_error("Unexpected regexp type.");
   }
