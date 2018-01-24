@@ -33,8 +33,7 @@ bool Thread::RunOneStep(std::string::const_iterator sp) {
       machine.AddReadyThread(Thread(machine, instr->dst, status));
       break;
     default:
-      std::cerr << "Error: invalid instruction type." << std::endl;
-      throw std::exception();
+      throw std::runtime_error("Unexpected instruction opcode.");
   }
   return false;
 }

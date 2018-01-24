@@ -95,12 +95,13 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
 
 RegexpPtr ParseRegexp(const std::string &s) {
   typedef std::string::const_iterator Iterator;
+
   regexp_grammer<Iterator> g;
   RegexpPtr rp;
 
   bool ok = qi::phrase_parse(s.begin(), s.end(), g, ascii::space, rp);
   if (ok && IsValidRegexp(rp)) return rp;
-  throw std::exception();
+  throw std::runtime_error("Invalid regular expression.");
 }
 
 void PrintRegexpImpl(int tab, RegexpPtr rp) {
@@ -139,7 +140,7 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
       PrintRegexpImpl(tab + 1, rp->left);
       break;
     default:
-      break;
+      throw std::runtime_error("Unexpected regexp type.");
   }
 }
 
@@ -160,7 +161,7 @@ bool IsValidRegexp(RegexpPtr rp) {
       case STAR:
         return IsValidRegexp(rp->left);
       default:
-        break;
+        throw std::runtime_error("Unexpected regexp type.");
     }
   }
   return false;

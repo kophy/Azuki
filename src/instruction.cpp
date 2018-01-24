@@ -33,8 +33,7 @@ std::string Instruction::str() {
       ss << "SPLIT I" << idx + 1 << " I" << dst;
       break;
     default:
-      std::cerr << "Error: invalid instruction type." << std::endl;
-      throw std::exception();
+      throw std::runtime_error("Unexpected instruction opcode.");
   }
   return ss.str();
 }
@@ -89,8 +88,7 @@ int CountInstructionImpl(RegexpPtr r) {
     case STAR:
       return 2 + CountInstructionImpl(r->left);
     default:
-      std::cerr << "Error: invalid regexp type." << std::endl;
-      throw std::exception();
+      throw std::runtime_error("Unexpected regexp type.");
   }
 }
 
@@ -141,8 +139,7 @@ void Emit(Program &program, int &pc, int &slot, RegexpPtr r) {
     program[pc++] = CreateJmpInstruction(split_pc);
     program[split_pc] = CreateSplitInstruction(pc);
   } else {
-    std::cerr << "Error: invalid regexp type." << std::endl;
-    throw std::exception();
+    throw std::runtime_error("Unexpected regexp type.");
   }
 }
 
