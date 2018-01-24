@@ -6,7 +6,7 @@ namespace azuki {
 
 TEST(InstructionTest, InvalidInstruction) {
   Instruction instr(Opcode(JMP + 1));
-  EXPECT_THROW(instr.str(), std::exception);
+  EXPECT_THROW(instr.str(), std::runtime_error);
 }
 
 TEST(InstructionTest, SingleChar) {

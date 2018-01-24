@@ -29,7 +29,7 @@ class Thread {
   // consumes the input character referenced by sp.
   // Otherwise, the thread either runs a control instruction and succeeds
   // (it will call "AddReadyThread"), or runs a data instruction and fails.
-  bool RunOneStep(std::string::const_iterator sp);
+  bool RunOneStep(std::string::const_iterator sp, bool capture = true);
 
  private:
   const Machine &machine;  // host machine

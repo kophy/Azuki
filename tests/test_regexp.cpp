@@ -107,9 +107,4 @@ TEST(RegexTest, SimpleParen) {
 #endif
 }
 
-TEST(RegexTest, NestedParen) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("((a+)d(cd)?)");
-  PrintRegexp(r1);
-}
-
 };  // namespace azuki

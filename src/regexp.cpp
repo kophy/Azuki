@@ -86,10 +86,12 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
              (single >> "?")[_val = phx::bind(CreateQUESTRegexp, _1)] |
              (single >> "*")[_val = phx::bind(CreateSTARRegexp, _1)] |
              single[_val = _1];
-    single = ("(" >> regexp >> ")")[_val = phx::bind(CreatePARENRegexp, _1)] |
-             (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
-             (space)[_val = phx::bind(CreateLITRegexp, _1)] |
-             char_('.')[_val = CreateDOTRegexp()];
+    single =
+        ("(" >> regexp >> ")")[_val = phx::bind(CreatePARENRegexp, _1)] |
+        (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
+        (space)[_val = phx::bind(CreateLITRegexp, _1)] |
+        (char_("~!@#%&=:;,-"))[_val = phx::bind(CreateLITRegexp, _1)] |
+        char_('.')[_val = CreateDOTRegexp()];
   }
 };
 

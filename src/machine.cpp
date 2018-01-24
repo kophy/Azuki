@@ -3,13 +3,8 @@
 
 namespace azuki {
 
-bool Thread::RunOneStep(std::string::const_iterator sp) {
+bool Thread::RunOneStep(std::string::const_iterator sp, bool capture) {
   InstrPtr instr = machine.FetchInstruction(pc++);
-
-#if DEBUG
-  std::cout << instr.str() << std::endl;
-#endif
-
   switch (instr->opcode) {
     case ANY:
       return true;
@@ -23,9 +18,11 @@ bool Thread::RunOneStep(std::string::const_iterator sp) {
       machine.UpdateStatus(status);
       break;
     case SAVE:
-      if (status.saved.size() <= instr->slot)
-        status.saved.resize(instr->slot + 1);
-      status.saved[instr->slot] = sp;
+      if (capture) {
+        if (status.saved.size() <= instr->slot)
+          status.saved.resize(instr->slot + 1);
+        status.saved[instr->slot] = sp;
+      }
       machine.AddReadyThread(Thread(machine, pc, status));
       break;
     case SPLIT:
