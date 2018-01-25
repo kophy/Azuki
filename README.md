@@ -5,6 +5,10 @@ Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。
 The name `Azuki` is Japanese アズキ(read bean).  
 名字`Azuki`来自日语アズキ(红豆)。
 
+<img src="https://github.com/kophy/Azuki/blob/master/images/logo.png" width="150" />
+
+*This logo is generated with [MakeGirlsMoe](http://make.girls.moe/#/).*
+
 ## Implementation
 - [Boost Spirit](http://boost-spirit.com/home/) is used to parse regular expression into syntax tree.
 - Syntax tree is compiled into program like Russ Cox's [re1](https://code.google.com/archive/p/re1/).
@@ -65,8 +69,8 @@ More examples can be found in `example` directory.
 
 ## TODO
 - [ ] non-capturing group
-- [ ] shorthand character classes(\\d, \\w, \\s)
-- [ ] escape special characters('^', '$', '(', ')', etc)
+- [X] shorthand character classes(\\d, \\w, \\s)
+- [X] escape special characters('^', '$', '(', ')', etc)
 - [ ] character and numerical ranges([a-c], [1-2])
 - [ ] curly bracket quantification ({2, 5})
 - [ ] regex replace
