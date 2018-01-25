@@ -107,7 +107,8 @@ RegexpPtr ParseRegexp(const std::string &s) {
 }
 
 void PrintRegexpImpl(int tab, RegexpPtr rp) {
-  std::cout << std::string(tab * 2, ' ');
+  if (tab > 0)
+    std::cout << std::string((tab - 1) * 4, ' ') << "|--";
   switch (rp->type) {
     case LIT:
       std::cout << "LIT " << rp->c << std::endl;

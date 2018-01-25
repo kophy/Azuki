@@ -18,7 +18,7 @@ std::string Instruction::str() {
       ss << "ANY";
       break;
     case CHAR:
-      ss << "CHAR '" << c << "''";
+      ss << "CHAR '" << c << "'";
       break;
     case JMP:
       ss << "JMP I" << dst;
