@@ -12,14 +12,14 @@ The name `Azuki` is Japanese アズキ(read bean).
 - Submatch tracking is recorded in each thread's state.
 
 ## Syntax
-|  | Effect  | Usage  | Match | Skip |
-|:--:|:--:|:--:|:--:|:--:|:--:|
-| &#124;  | alternation  | a &#124; b  | "a", "b"  | "c" |
-|  ? | match item 0 or 1 time | a?b  |  "b", "ab" | "aa", "aab" |
-|  + | match item 1 or more times | a+  | "a", "aaa" | "", "b" |
-| *  | match item 0 or more times | a*b  | "b", "aab" | "ac" |
-| ^  | match start | ^a  | "a", "abc"  | "b", "ba" |
-| $  | match end  | a$  | "a", "bca"  | "b", "ab" |
+|         | Effect   | Usage   | Match | Skip |
+| ------------- |:-------------:|:-----:|:-----:|:------:|
+| &#124;  | alternation  | a &#124; b  | "a", "b"  | "c" |  
+|  ? | match item 0 or 1 time | a?b  |  "b", "ab" | "aa", "aab" |  
+|  + | match item 1 or more times | a+  | "a", "aaa" | "", "b" |  
+| *  | match item 0 or more times | a&#124;b  | "b", "aab" | "ac" |  
+| ^  | match start | ^a  | "a", "abc"  | "b", "ba" |  
+| $  | match end  | a$  | "a", "bca"  | "b", "ab" |  
 
 ## Example
 Suppose we want to match the Internet word for "laugh", 233(also 2333, 23333, ...), the regular expression can be "(233+)".
