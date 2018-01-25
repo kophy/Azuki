@@ -2,8 +2,6 @@
 #include <string>
 #include <vector>
 #include "azuki.h"
-#include "regexp.h"
-#include "instruction.h"
 
 int main() {
   Azuki::Machine m = Azuki::CreateMachine("(233+)");

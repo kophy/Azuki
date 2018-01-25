@@ -17,7 +17,7 @@ Machine CreateMachine(const std::string &e) {
 
   // Create machine with program and positonal match flags.
   RegexpPtr rp = ParseRegexp(input);
-  Program program = CompileRegex(rp);
+  Program program = CompileRegexp(rp);
 
   Machine m(program);
   m.SetMatchBegin(match_begin).SetMatchEnd(match_end);

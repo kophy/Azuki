@@ -26,8 +26,8 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
 }
 
 TEST(RegexpTest, SimpleChar) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("a");
-  std::shared_ptr<Regexp> r2(new Regexp(LIT, 'a'));
+  RegexpPtr r1 = ParseRegexp("a");
+  RegexpPtr r2(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -35,8 +35,8 @@ TEST(RegexpTest, SimpleChar) {
 }
 
 TEST(RegexpTest, SimpleCat) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("ab");
-  std::shared_ptr<Regexp> r2(new Regexp(CAT));
+  RegexpPtr r1 = ParseRegexp("ab");
+  RegexpPtr r2(new Regexp(CAT));
   r2->left.reset(new Regexp(LIT, 'a'));
   r2->right.reset(new Regexp(LIT, 'b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
@@ -46,8 +46,8 @@ TEST(RegexpTest, SimpleCat) {
 }
 
 TEST(RegexpTest, SimpleDot) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp(".b");
-  std::shared_ptr<Regexp> r2(new Regexp(CAT));
+  RegexpPtr r1 = ParseRegexp(".b");
+  RegexpPtr r2(new Regexp(CAT));
   r2->left.reset(new Regexp(DOT));
   r2->right.reset(new Regexp(LIT, 'b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
@@ -57,8 +57,8 @@ TEST(RegexpTest, SimpleDot) {
 }
 
 TEST(RegexTest, SimpleAlt) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("a|b");
-  std::shared_ptr<Regexp> r2(new Regexp(ALT));
+  RegexpPtr r1 = ParseRegexp("a|b");
+  RegexpPtr r2(new Regexp(ALT));
   r2->left.reset(new Regexp(LIT, 'a'));
   r2->right.reset(new Regexp(LIT, 'b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
@@ -68,8 +68,8 @@ TEST(RegexTest, SimpleAlt) {
 }
 
 TEST(RegexTest, SimplePlus) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("a+");
-  std::shared_ptr<Regexp> r2(new Regexp(PLUS));
+  RegexpPtr r1 = ParseRegexp("a+");
+  RegexpPtr r2(new Regexp(PLUS));
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
@@ -78,8 +78,8 @@ TEST(RegexTest, SimplePlus) {
 }
 
 TEST(RegexTest, SimpleQuest) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("a?");
-  std::shared_ptr<Regexp> r2(new Regexp(QUEST));
+  RegexpPtr r1 = ParseRegexp("a?");
+  RegexpPtr r2(new Regexp(QUEST));
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
@@ -88,8 +88,8 @@ TEST(RegexTest, SimpleQuest) {
 }
 
 TEST(RegexTest, SimpleStar) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("a*");
-  std::shared_ptr<Regexp> r2(new Regexp(STAR));
+  RegexpPtr r1 = ParseRegexp("a*");
+  RegexpPtr r2(new Regexp(STAR));
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
@@ -98,8 +98,8 @@ TEST(RegexTest, SimpleStar) {
 }
 
 TEST(RegexTest, SimpleParen) {
-  std::shared_ptr<Regexp> r1 = ParseRegexp("(a)");
-  std::shared_ptr<Regexp> r2(new Regexp(PAREN));
+  RegexpPtr r1 = ParseRegexp("(a)");
+  RegexpPtr r2(new Regexp(PAREN));
   r2->left.reset(new Regexp(LIT, 'a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG

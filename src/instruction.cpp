@@ -8,7 +8,7 @@ namespace Azuki {
 int CountInstruction(RegexpPtr r);
 
 // Emit instructions compiled from regexp to program with starting index pc.
-void Emit(Program &program, int &pc, int &slot, RegexpPtr r);
+void Emit(Program &program, int &pc, int &slot, RegexpPtr rp);
 
 std::string Instruction::str() {
   std::stringstream ss;
@@ -67,76 +67,77 @@ InstrPtr CreateJmpInstruction(int dst) {
   return instr;
 }
 
-int CountInstructionImpl(RegexpPtr r);
-int CountInstruction(RegexpPtr r) { return CountInstructionImpl(r) + 1; }
+int CountInstructionImpl(RegexpPtr rp);
+int CountInstruction(RegexpPtr rp) { return CountInstructionImpl(rp) + 1; }
 
-int CountInstructionImpl(RegexpPtr r) {
-  switch (r->type) {
+int CountInstructionImpl(RegexpPtr rp) {
+  switch (rp->type) {
     case ALT:
-      return 2 + CountInstructionImpl(r->left) + CountInstructionImpl(r->right);
+      return 2 + CountInstructionImpl(rp->left) +
+             CountInstructionImpl(rp->right);
     case CAT:
-      return CountInstructionImpl(r->left) + CountInstructionImpl(r->right);
+      return CountInstructionImpl(rp->left) + CountInstructionImpl(rp->right);
     case DOT:
       return 1;
     case LIT:
       return 1;
     case PAREN:
-      return 2 + CountInstructionImpl(r->left);
+      return 2 + CountInstructionImpl(rp->left);
     case PLUS:
-      return 2 + CountInstructionImpl(r->left);
+      return 2 + CountInstructionImpl(rp->left);
     case QUEST:
-      return 1 + CountInstructionImpl(r->left);
+      return 1 + CountInstructionImpl(rp->left);
     case STAR:
-      return 2 + CountInstructionImpl(r->left);
+      return 2 + CountInstructionImpl(rp->left);
     default:
       throw std::runtime_error("Unexpected regexp type.");
   }
 }
 
-Program CompileRegex(RegexpPtr r) {
-  Program program(CountInstruction(r));
+Program CompileRegexp(RegexpPtr rp) {
+  Program program(CountInstruction(rp));
   int pc = 0, slot = 0;
-  Emit(program, pc, slot, r);
+  Emit(program, pc, slot, rp);
   program[pc] = CreateMatchInstruction();
 
   for (int idx = 0; idx < program.size(); ++idx) program[idx]->idx = idx;
   return program;
 }
 
-void Emit(Program &program, int &pc, int &slot, RegexpPtr r) {
-  if (r->type == ALT) {
+void Emit(Program &program, int &pc, int &slot, RegexpPtr rp) {
+  if (rp->type == ALT) {
     int split_pc = pc++;
-    Emit(program, pc, slot, r->left);
+    Emit(program, pc, slot, rp->left);
     program[split_pc] = CreateSplitInstruction(pc + 1);
     int jmp_pc = pc++;
-    Emit(program, pc, slot, r->right);
+    Emit(program, pc, slot, rp->right);
     program[jmp_pc] = CreateJmpInstruction(pc);
-  } else if (r->type == CAT) {
-    Emit(program, pc, slot, r->left);
-    Emit(program, pc, slot, r->right);
-  } else if (r->type == DOT) {
+  } else if (rp->type == CAT) {
+    Emit(program, pc, slot, rp->left);
+    Emit(program, pc, slot, rp->right);
+  } else if (rp->type == DOT) {
     program[pc++] = CreateAnyInstruction();
-  } else if (r->type == LIT) {
-    program[pc++] = CreateCharInstruction(r->c);
-  } else if (r->type == PAREN) {
+  } else if (rp->type == LIT) {
+    program[pc++] = CreateCharInstruction(rp->c);
+  } else if (rp->type == PAREN) {
     int old_slot = slot;
     slot += 2;
     program[pc++] = CreateSaveInstruction(old_slot);
-    Emit(program, pc, slot, r->left);
+    Emit(program, pc, slot, rp->left);
     program[pc++] = CreateSaveInstruction(old_slot + 1);
-  } else if (r->type == PLUS) {
+  } else if (rp->type == PLUS) {
     int current_pc = pc;
-    Emit(program, pc, slot, r->left);
+    Emit(program, pc, slot, rp->left);
     program[pc] = CreateSplitInstruction(pc + 2, true);
     ++pc;
     program[pc++] = CreateJmpInstruction(current_pc);
-  } else if (r->type == QUEST) {
+  } else if (rp->type == QUEST) {
     int split_pc = pc++;
-    Emit(program, pc, slot, r->left);
+    Emit(program, pc, slot, rp->left);
     program[split_pc] = CreateSplitInstruction(pc);
-  } else if (r->type == STAR) {
+  } else if (rp->type == STAR) {
     int split_pc = pc++;
-    Emit(program, pc, slot, r->left);
+    Emit(program, pc, slot, rp->left);
     program[pc++] = CreateJmpInstruction(split_pc);
     program[split_pc] = CreateSplitInstruction(pc, true);
   } else {

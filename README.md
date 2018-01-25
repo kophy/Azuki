@@ -1,6 +1,6 @@
 # Azuki
 Azuki is a simple regular expression engine implemented with virtual machine approach.  
-Azuki是一个简单、基于虚拟机方法实现的正则表达式引擎。  
+Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。  
 
 The name `Azuki` is Japanese アズキ(read bean).  
 名字`Azuki`来自日语アズキ(红豆)。
@@ -17,7 +17,7 @@ The name `Azuki` is Japanese アズキ(read bean).
 | &#124;  | alternation  | a &#124; b  | "a", "b"  | "c" |  
 |  ? | match item 0 or 1 time | a?b  |  "b", "ab" | "aa", "aab" |  
 |  + | match item 1 or more times | a+  | "a", "aaa" | "", "b" |  
-| *  | match item 0 or more times | a&#124;b  | "b", "aab" | "ac" |  
+| *  | match item 0 or more times | a&#42;b  | "b", "aab" | "ac" |  
 | ^  | match start | ^a  | "a", "abc"  | "b", "ba" |  
 | $  | match end  | a$  | "a", "bca"  | "b", "ab" |  
 

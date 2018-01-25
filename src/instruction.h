@@ -36,7 +36,7 @@ InstrPtr CreateSplitInstruction(int dst, bool greedy = false);
 InstrPtr CreateJmpInstruction(int dst);
 
 // Compile the regexp into a program.
-Program CompileRegex(RegexpPtr r);
+Program CompileRegexp(RegexpPtr rp);
 
 // Print the program (for debug use).
 void PrintProgram(const Program &program);
