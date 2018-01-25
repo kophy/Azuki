@@ -5,10 +5,6 @@ Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。
 The name `Azuki` is Japanese アズキ(read bean).  
 名字`Azuki`来自日语アズキ(红豆)。
 
-<img src="https://github.com/kophy/Azuki/blob/master/images/logo.png" width="150" />
-
-*This logo is generated with [MakeGirlsMoe](http://make.girls.moe/#/).*
-
 ## Implementation
 - [Boost Spirit](http://boost-spirit.com/home/) is used to parse regular expression into syntax tree.
 - Syntax tree is compiled into program like Russ Cox's [re1](https://code.google.com/archive/p/re1/).
@@ -24,6 +20,9 @@ The name `Azuki` is Japanese アズキ(read bean).
 | *  | match item 0 or more times | a&#42;b  | "b", "aab" | "ac" |  
 | ^  | match start | ^a  | "a", "abc"  | "b", "ba" |  
 | $  | match end  | a$  | "a", "bca"  | "b", "ab" |  
+| \w | match word character | \w+ | "a", "ab" | " ", "123" |
+| \d | match digit | \d+ | "123"  | " ", "ab" |
+| \s | match whitespace | \s+ | " ", "\t" | "ab", "123" |
 
 ## Example
 Suppose we want to match the Internet word for "laugh", 233(also 2333, 23333, ...), the regular expression can be "(233+)".
