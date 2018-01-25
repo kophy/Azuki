@@ -10,6 +10,8 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
     case CAT:
       return IsEqualRegexp(rp1->left, rp2->left) &&
              IsEqualRegexp(rp1->right, rp2->right);
+    case CLASS:
+      return rp1->c == rp2->c;
     case DOT:
       return true;
     case PAREN:
@@ -101,6 +103,25 @@ TEST(RegexTest, SimpleParen) {
   RegexpPtr r1 = ParseRegexp("(a)");
   RegexpPtr r2(new Regexp(PAREN));
   r2->left.reset(new Regexp(LIT, 'a'));
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, SimpleEscape1) {
+  RegexpPtr r1 = ParseRegexp("\\w+");
+  RegexpPtr r2(new Regexp(PLUS));
+  r2->left.reset(new Regexp(CLASS, 'w'));
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, SimpleEscape2) {
+  RegexpPtr r1 = ParseRegexp("\\?");
+  RegexpPtr r2(new Regexp(LIT, '?'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);

@@ -17,6 +17,15 @@ std::string Instruction::str() {
     case ANY:
       ss << "ANY";
       break;
+    case ANY_WORD:
+      ss << "ANY WORD";
+      break;
+    case ANY_DIGIT:
+      ss << "ANY DIGIT";
+      break;
+    case ANY_SPACE:
+      ss << "ANY SPACE";
+      break;
     case CHAR:
       ss << "CHAR '" << c << "'";
       break;
@@ -39,6 +48,18 @@ std::string Instruction::str() {
 }
 
 InstrPtr CreateAnyInstruction() { return InstrPtr(new Instruction(ANY)); }
+
+InstrPtr CreateAnyWordInstruction() {
+  return InstrPtr(new Instruction(ANY_WORD));
+}
+
+InstrPtr CreateAnyDigitInstruction() {
+  return InstrPtr(new Instruction(ANY_DIGIT));
+}
+
+InstrPtr CreateAnySpaceInstruction() {
+  return InstrPtr(new Instruction(ANY_SPACE));
+}
 
 InstrPtr CreateCharInstruction(char c) {
   InstrPtr instr(new Instruction(CHAR));
@@ -77,6 +98,8 @@ int CountInstructionImpl(RegexpPtr rp) {
              CountInstructionImpl(rp->right);
     case CAT:
       return CountInstructionImpl(rp->left) + CountInstructionImpl(rp->right);
+    case CLASS:
+      return 1;
     case DOT:
       return 1;
     case LIT:
@@ -115,6 +138,13 @@ void Emit(Program &program, int &pc, int &slot, RegexpPtr rp) {
   } else if (rp->type == CAT) {
     Emit(program, pc, slot, rp->left);
     Emit(program, pc, slot, rp->right);
+  } else if (rp->type == CLASS) {
+    if (rp->c == 'w')
+      program[pc++] = CreateAnyWordInstruction();
+    else if (rp->c == 'd')
+      program[pc++] = CreateAnyDigitInstruction();
+    else
+      program[pc++] = CreateAnySpaceInstruction();
   } else if (rp->type == DOT) {
     program[pc++] = CreateAnyInstruction();
   } else if (rp->type == LIT) {

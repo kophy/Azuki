@@ -90,4 +90,14 @@ TEST(InstructionTest, SimpleParen) {
 #endif
 }
 
+TEST(InstructionTest, SimpleEscape) {
+  std::shared_ptr<Regexp> r(new Regexp(PLUS));
+  r->left.reset(new Regexp(CLASS, 'w'));
+  Program program = CompileRegexp(r);
+  EXPECT_EQ(program.size(), 4);
+#ifdef DEBUG
+  PrintProgram(program);
+#endif
+}
+
 };  // namespace Azuki

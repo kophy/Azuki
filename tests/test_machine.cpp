@@ -102,4 +102,37 @@ TEST(MachineTest, SimpleParen) {
   EXPECT_FALSE(m.Run("baac").match);
 }
 
+TEST(MachineTest, SimpleWordClass) {
+  // match "\w+"
+  RegexpPtr rp(new Regexp(PLUS));
+  rp->left.reset(new Regexp(CLASS, 'w'));
+  Machine m = CreateMachineFromRegexp(rp);
+  EXPECT_TRUE(m.Run("ab_12").match);
+  EXPECT_TRUE(m.Run("12_ab").match);
+  EXPECT_FALSE(m.Run("\ta1").match);
+  EXPECT_FALSE(m.Run("?a1").match);
+}
+
+TEST(MachineTest, SimpleDigitClass) {
+  // match "\d+"
+  RegexpPtr rp(new Regexp(PLUS));
+  rp->left.reset(new Regexp(CLASS, 'd'));
+  Machine m = CreateMachineFromRegexp(rp);
+  EXPECT_TRUE(m.Run("1234").match);
+  EXPECT_TRUE(m.Run("023").match);
+  EXPECT_FALSE(m.Run(" 12").match);
+  EXPECT_FALSE(m.Run("a1").match);
+}
+
+TEST(MachineTest, SimpleSpaceClass) {
+  // match "\s+"
+  RegexpPtr rp(new Regexp(PLUS));
+  rp->left.reset(new Regexp(CLASS, 's'));
+  Machine m = CreateMachineFromRegexp(rp);
+  EXPECT_TRUE(m.Run("  a1").match);
+  EXPECT_TRUE(m.Run("\t\ra1").match);
+  EXPECT_FALSE(m.Run("a1").match);
+  EXPECT_FALSE(m.Run("?a1").match);
+}
+
 };  // namespace Azuki

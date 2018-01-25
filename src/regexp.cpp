@@ -10,6 +10,10 @@ namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 namespace qi = boost::spirit::qi;
 
+// Just a wrapper to create Regexp with any escaped character -- either
+// "CreateCLASSRegexp" or "CreateLITRegexp" is called.
+RegexpPtr CreateRegexpWithEscaped(char c);
+
 RegexpPtr CreateALTRegexp(RegexpPtr left, RegexpPtr right) {
   RegexpPtr rp(new Regexp(ALT));
   rp->left = left;
@@ -21,6 +25,11 @@ RegexpPtr CreateCATRegexp(RegexpPtr left, RegexpPtr right) {
   RegexpPtr rp(new Regexp(CAT));
   rp->left = left;
   rp->right = right;
+  return rp;
+}
+
+RegexpPtr CreateCLASSRegexp(char c) {
+  RegexpPtr rp(new Regexp(CLASS, c));
   return rp;
 }
 
@@ -66,6 +75,18 @@ RegexpPtr CreateRegexp(RegexpType type, char c, RegexpPtr left,
   return rp;
 }
 
+RegexpPtr CreateRegexpWithEscaped(char c) {
+  static std::string class_char = "dsw";
+  static std::string special_char = ".+?*|\\";
+
+  if (class_char.find(c) != std::string::npos)
+    return CreateCLASSRegexp(c);
+  else if (special_char.find(c) != std::string::npos)
+    return CreateLITRegexp(c);
+  else
+    throw std::runtime_error("Invalid escape character.");
+}
+
 template <typename Iterator>
 struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
   qi::rule<Iterator, RegexpPtr()> regexp;
@@ -86,12 +107,12 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
              (single >> "?")[_val = phx::bind(CreateQUESTRegexp, _1)] |
              (single >> "*")[_val = phx::bind(CreateSTARRegexp, _1)] |
              single[_val = _1];
-    single =
-        ("(" >> regexp >> ")")[_val = phx::bind(CreatePARENRegexp, _1)] |
-        (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
-        (space)[_val = phx::bind(CreateLITRegexp, _1)] |
-        (char_("~!@#%&=:;,-"))[_val = phx::bind(CreateLITRegexp, _1)] |
-        char_('.')[_val = CreateDOTRegexp()];
+    single = ("(" >> regexp >> ")")[_val = phx::bind(CreatePARENRegexp, _1)] |
+             ("\\" >> char_)[_val = phx::bind(CreateRegexpWithEscaped, _1)] |
+             (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
+             (space)[_val = phx::bind(CreateLITRegexp, _1)] |
+             (char_("~!@#%&=:;,_<>-"))[_val = phx::bind(CreateLITRegexp, _1)] |
+             char_('.')[_val = CreateDOTRegexp()];
   }
 };
 
@@ -107,8 +128,7 @@ RegexpPtr ParseRegexp(const std::string &s) {
 }
 
 void PrintRegexpImpl(int tab, RegexpPtr rp) {
-  if (tab > 0)
-    std::cout << std::string((tab - 1) * 4, ' ') << "|--";
+  if (tab > 0) std::cout << std::string((tab - 1) * 4, ' ') << "|--";
   switch (rp->type) {
     case LIT:
       std::cout << "LIT " << rp->c << std::endl;
@@ -122,6 +142,9 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
       std::cout << "CAT" << std::endl;
       PrintRegexpImpl(tab + 1, rp->left);
       PrintRegexpImpl(tab + 1, rp->right);
+      break;
+    case CLASS:
+      std::cout << "CLASS " << rp->c << std::endl;
       break;
     case DOT:
       std::cout << "DOT" << std::endl;
@@ -155,6 +178,7 @@ bool IsValidRegexp(RegexpPtr rp) {
       case ALT:
       case CAT:
         return IsValidRegexp(rp->left) && IsValidRegexp(rp->right);
+      case CLASS:
       case LIT:
       case DOT:
         return true;

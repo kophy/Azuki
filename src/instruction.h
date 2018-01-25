@@ -9,7 +9,17 @@
 namespace Azuki {
 
 // Instruction opcodes.
-enum Opcode { ANY, CHAR, MATCH, SAVE, SPLIT, JMP };
+enum Opcode {
+  ANY,
+  ANY_WORD,
+  ANY_DIGIT,
+  ANY_SPACE,
+  CHAR,
+  MATCH,
+  SAVE,
+  SPLIT,
+  JMP
+};
 
 // An instruction struct encodes information to run an instruction.
 struct Instruction {
@@ -29,6 +39,9 @@ typedef std::vector<InstrPtr> Program;
 
 // Convenience functions to create different instructions.
 InstrPtr CreateAnyInstruction();
+InstrPtr CreateAnyWordInstruction();
+InstrPtr CreateAnyDigitInstruction();
+InstrPtr CreateAnySpaceInstruction();
 InstrPtr CreateCharInstruction(char c);
 InstrPtr CreateMatchInstruction();
 InstrPtr CreateSaveInstruction(int slot);

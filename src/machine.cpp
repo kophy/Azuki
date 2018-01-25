@@ -1,3 +1,4 @@
+#include <cctype>
 #include <iostream>
 #include "machine.h"
 
@@ -8,6 +9,12 @@ bool Thread::RunOneStep(std::string::const_iterator sp, bool capture) {
   switch (instr->opcode) {
     case ANY:
       return true;
+    case ANY_WORD:
+      return isalnum(*sp) || (*sp == '_');
+    case ANY_DIGIT:
+      return isdigit(*sp);
+    case ANY_SPACE:
+      return isspace(*sp);
     case CHAR:
       return (instr->c == *sp);
     case JMP:
