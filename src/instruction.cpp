@@ -4,11 +4,24 @@
 
 namespace Azuki {
 
-// Count the number of instructions required to represent the regexp.
-int CountInstruction(RegexpPtr r);
+namespace {
+
+// The Context struct holds variables when compile the program recursively.
+// It should be used only in this cpp file by CompileRegexp and Emit, so here an
+// anonymous namespace is used.
+struct Context {
+  int pc;
+  int slot;
+  Context(int pc, int slot) : pc(pc), slot(slot) {}
+};
+
+};  // namespace
+
+// Calculate the number of instructions required to represent the regexp.
+int CalculateInstruction(RegexpPtr rp);
 
 // Emit instructions compiled from regexp to program with starting index pc.
-void Emit(Program &program, int &pc, int &slot, RegexpPtr rp);
+void Emit(Program &program, Context &context, RegexpPtr rp);
 
 std::string Instruction::str() {
   std::stringstream ss;
@@ -88,16 +101,19 @@ InstrPtr CreateJmpInstruction(int dst) {
   return instr;
 }
 
-int CountInstructionImpl(RegexpPtr rp);
-int CountInstruction(RegexpPtr rp) { return CountInstructionImpl(rp) + 1; }
+int CalculateInstructionImpl(RegexpPtr rp);
+int CalculateInstruction(RegexpPtr rp) {
+  return CalculateInstructionImpl(rp) + 1;  // the last instruction "MATCH"
+}
 
-int CountInstructionImpl(RegexpPtr rp) {
+int CalculateInstructionImpl(RegexpPtr rp) {
   switch (rp->type) {
     case ALT:
-      return 2 + CountInstructionImpl(rp->left) +
-             CountInstructionImpl(rp->right);
+      return 2 + CalculateInstructionImpl(rp->left) +
+             CalculateInstructionImpl(rp->right);
     case CAT:
-      return CountInstructionImpl(rp->left) + CountInstructionImpl(rp->right);
+      return CalculateInstructionImpl(rp->left) +
+             CalculateInstructionImpl(rp->right);
     case CLASS:
       return 1;
     case DOT:
@@ -105,39 +121,33 @@ int CountInstructionImpl(RegexpPtr rp) {
     case LIT:
       return 1;
     case PAREN:
-      return 2 + CountInstructionImpl(rp->left);
+      return 2 + CalculateInstructionImpl(rp->left);
     case PLUS:
-      return 2 + CountInstructionImpl(rp->left);
+      return 2 + CalculateInstructionImpl(rp->left);
     case QUEST:
-      return 1 + CountInstructionImpl(rp->left);
+      return 1 + CalculateInstructionImpl(rp->left);
     case STAR:
-      return 2 + CountInstructionImpl(rp->left);
+      return 2 + CalculateInstructionImpl(rp->left);
     default:
       throw std::runtime_error("Unexpected regexp type.");
   }
 }
 
-Program CompileRegexp(RegexpPtr rp) {
-  Program program(CountInstruction(rp));
-  int pc = 0, slot = 0;
-  Emit(program, pc, slot, rp);
-  program[pc] = CreateMatchInstruction();
-
-  for (int idx = 0; idx < program.size(); ++idx) program[idx]->idx = idx;
-  return program;
-}
-
-void Emit(Program &program, int &pc, int &slot, RegexpPtr rp) {
+// Emit instructions compiled from regexp to program with starting index pc.
+void Emit(Program &program, Context &context, RegexpPtr rp) {
+  int &pc = context.pc;
+  int &slot = context.slot;
+  
   if (rp->type == ALT) {
     int split_pc = pc++;
-    Emit(program, pc, slot, rp->left);
+    Emit(program, context, rp->left);
     program[split_pc] = CreateSplitInstruction(pc + 1);
     int jmp_pc = pc++;
-    Emit(program, pc, slot, rp->right);
+    Emit(program, context, rp->right);
     program[jmp_pc] = CreateJmpInstruction(pc);
   } else if (rp->type == CAT) {
-    Emit(program, pc, slot, rp->left);
-    Emit(program, pc, slot, rp->right);
+    Emit(program, context, rp->left);
+    Emit(program, context, rp->right);
   } else if (rp->type == CLASS) {
     if (rp->c == 'w')
       program[pc++] = CreateAnyWordInstruction();
@@ -153,26 +163,36 @@ void Emit(Program &program, int &pc, int &slot, RegexpPtr rp) {
     int old_slot = slot;
     slot += 2;
     program[pc++] = CreateSaveInstruction(old_slot);
-    Emit(program, pc, slot, rp->left);
+    Emit(program, context, rp->left);
     program[pc++] = CreateSaveInstruction(old_slot + 1);
   } else if (rp->type == PLUS) {
     int current_pc = pc;
-    Emit(program, pc, slot, rp->left);
+    Emit(program, context, rp->left);
     program[pc] = CreateSplitInstruction(pc + 2, true);
     ++pc;
     program[pc++] = CreateJmpInstruction(current_pc);
   } else if (rp->type == QUEST) {
     int split_pc = pc++;
-    Emit(program, pc, slot, rp->left);
+    Emit(program, context, rp->left);
     program[split_pc] = CreateSplitInstruction(pc);
   } else if (rp->type == STAR) {
     int split_pc = pc++;
-    Emit(program, pc, slot, rp->left);
+    Emit(program, context, rp->left);
     program[pc++] = CreateJmpInstruction(split_pc);
     program[split_pc] = CreateSplitInstruction(pc, true);
   } else {
     throw std::runtime_error("Unexpected regexp type.");
   }
+}
+
+Program CompileRegexp(RegexpPtr rp) {
+  Program program(CalculateInstruction(rp));
+  Context context(0, 0);
+  Emit(program, context, rp);
+  program.back() = CreateMatchInstruction();
+
+  for (int idx = 0; idx < program.size(); ++idx) program[idx]->idx = idx;
+  return program;
 }
 
 void PrintProgram(const Program &program) {

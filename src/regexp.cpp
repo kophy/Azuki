@@ -10,8 +10,8 @@ namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 namespace qi = boost::spirit::qi;
 
-// Just a wrapper to create Regexp with any escaped character -- either
-// "CreateCLASSRegexp" or "CreateLITRegexp" is called.
+// A wrapper to handle arbitrary escaped character.
+// Either CreateCLASSRegexp or CreateLITRegexp is called to create the Regexp.
 RegexpPtr CreateRegexpWithEscaped(char c);
 
 RegexpPtr CreateALTRegexp(RegexpPtr left, RegexpPtr right) {
@@ -76,15 +76,17 @@ RegexpPtr CreateRegexp(RegexpType type, char c, RegexpPtr left,
 }
 
 RegexpPtr CreateRegexpWithEscaped(char c) {
+  // \w for wrod, \d for digit, \s for space
   static std::string class_char = "dsw";
-  static std::string special_char = ".+?*|\\";
+  // only character used as operators can be escaped
+  static std::string special_char = ".+?*|\\()[]";
 
   if (class_char.find(c) != std::string::npos)
     return CreateCLASSRegexp(c);
   else if (special_char.find(c) != std::string::npos)
     return CreateLITRegexp(c);
   else
-    throw std::runtime_error("Invalid escape character.");
+    throw std::runtime_error("Invalid escaped character.");
 }
 
 template <typename Iterator>
@@ -128,7 +130,7 @@ RegexpPtr ParseRegexp(const std::string &s) {
 }
 
 void PrintRegexpImpl(int tab, RegexpPtr rp) {
-  if (tab > 0) std::cout << std::string((tab - 1) * 4, ' ') << "|--";
+  if (tab > 0) std::cout << string((tab - 1) * 4, ' ') << "|--";
   switch (rp->type) {
     case LIT:
       std::cout << "LIT " << rp->c << std::endl;
@@ -172,7 +174,7 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
 
 void PrintRegexp(RegexpPtr rp) { PrintRegexpImpl(0, rp); }
 
-bool IsValidRegexp(RegexpPtr rp) {
+bool IsValidRegexp(RegexpPtr rp) noexcept {
   if (rp.get()) {
     switch (rp->type) {
       case ALT:
@@ -188,7 +190,8 @@ bool IsValidRegexp(RegexpPtr rp) {
       case STAR:
         return IsValidRegexp(rp->left);
       default:
-        throw std::runtime_error("Unexpected regexp type.");
+        std::cerr << "Unexpected regexp type." << std::endl;
+        return false;
     }
   }
   return false;

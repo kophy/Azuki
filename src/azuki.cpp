@@ -6,7 +6,7 @@
 
 namespace Azuki {
 
-Machine CreateMachine(const std::string &e) {
+Machine CreateMachine(const string &e) {
   bool match_begin = StartsWith(e, CARET);
   bool match_end = EndsWith(e, DOLLAR);
 
@@ -24,17 +24,16 @@ Machine CreateMachine(const std::string &e) {
   return m;
 }
 
-bool RegexSearch(const Machine &m, const std::string &s) {
+bool RegexSearch(const Machine &m, const string &s) {
   auto status = m.Run(s);
   return status.match;
 }
 
-bool RegexSearch(const Machine &m, const std::string &s,
-                 std::vector<std::string> &v) {
+bool RegexSearch(const Machine &m, const string &s, vector<string> &v) {
   auto status = m.Run(s);
   if (!status.match) return false;
-  for (int i = 0; i < status.saved.size(); i += 2)
-    v.push_back(std::string(status.saved[i], status.saved[i + 1]));
+  for (unsigned int i = 0; i < status.saved.size(); i += 2)
+    v.push_back(string(status.saved[i], status.saved[i + 1]));
   return true;
 }
 

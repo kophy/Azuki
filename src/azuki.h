@@ -1,8 +1,7 @@
 #ifndef __AZUKI_AZUKI__
 #define __AZUKI_AZUKI__
 
-#include <string>
-#include <vector>
+#include "common.h"
 #include "machine.h"
 
 namespace Azuki {
@@ -12,15 +11,14 @@ const char CARET = '^';
 const char DOLLAR = '$';
 
 // Create machine from raw regular expression.
-Machine CreateMachine(const std::string &e);
+Machine CreateMachine(const string &e);
 
 // Determines if there is a match between the regular expression represented by
 // machine m and some substring in string s.
 // If the third parameter vector<string> v is provided, captured groups will
 // be saved in v.
-bool RegexSearch(const Machine &m, const std::string &s);
-bool RegexSearch(const Machine &m, const std::string &s,
-                 std::vector<std::string> &v);
+bool RegexSearch(const Machine &m, const string &s);
+bool RegexSearch(const Machine &m, const string &s, vector<string> &v);
 
 };  // namespace Azuki
 

@@ -1,9 +1,7 @@
 #ifndef __AZUKI_INSTR__
 #define __AZUKI_INSTR__
 
-#include <memory>
-#include <string>
-#include <vector>
+#include "common.h"
 #include "regexp.h"
 
 namespace Azuki {
@@ -21,21 +19,24 @@ enum Opcode {
   JMP
 };
 
-// An instruction struct encodes information to run an instruction.
+// The instruction struct encodes information to run an instruction.
 struct Instruction {
+  // Required fields.
   unsigned int idx;   // instruction index
-  Opcode opcode;      // instruction type
-  char c;             // character to match (only used in CHAR)
-  unsigned int dst;   // destination instruction index (used in SPLIT and JMP)
-  bool greedy;        // if true, try dst before (pc + 1) (only used in SPLIT)
-  unsigned int slot;  // slot to save string pointer (only used in SAVE)
+  Opcode opcode;      // instruction opcode
+
+  // Optional fields.
+  char c;             // character to match (CHAR)
+  unsigned int dst;   // destination instruction index (SPLIT and JMP)
+  bool greedy;        // if true, try dst before (idx + 1) (SPLIT)
+  unsigned int slot;  // slot to save string pointer (SAVE)
 
   Instruction(Opcode opcode) : opcode(opcode) {}
-  std::string str();
+  string str();
 };
 
-typedef std::shared_ptr<Instruction> InstrPtr;
-typedef std::vector<InstrPtr> Program;
+typedef shared_ptr<Instruction> InstrPtr;
+typedef vector<InstrPtr> Program;
 
 // Convenience functions to create different instructions.
 InstrPtr CreateAnyInstruction();
@@ -48,7 +49,7 @@ InstrPtr CreateSaveInstruction(int slot);
 InstrPtr CreateSplitInstruction(int dst, bool greedy = false);
 InstrPtr CreateJmpInstruction(int dst);
 
-// Compile the regexp into a program.
+// Compile into program the regular expression represented with Regexp.
 Program CompileRegexp(RegexpPtr rp);
 
 // Print the program (for debug use).
@@ -56,4 +57,4 @@ void PrintProgram(const Program &program);
 
 };  // namespace Azuki
 
-#endif
+#endif  // __AZUKI_INSTR__

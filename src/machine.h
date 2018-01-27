@@ -1,35 +1,38 @@
 #ifndef __AZUKI_MACHINE__
 #define __AZUKI_MACHINE__
 
-#include <memory>
 #include <queue>
-#include <string>
-#include <vector>
+#include "common.h"
 #include "instruction.h"
 
 namespace Azuki {
 
-// Hold result of regexp match.
+// The MatchStatus struct is used to hold results of regexp match.
 struct MatchStatus {
   bool match;
-  std::vector<std::string::const_iterator> saved;  // save capturing groups
+  vector<StringPtr> saved;  // save capturing groups
+
+  MatchStatus();
+  MatchStatus(bool match, const vector<StringPtr> &saved);
 };
 
-class Machine;
+class Machine;  // forward declaration
 
 // The Thread class implements threads to be run in the virtual machine.
 // Each thread keeps its own program counter and match status.
 class Thread {
  public:
-  Thread(const Machine &machine, int pc) : machine(machine), pc(pc) {}
-  Thread(const Machine &machine, int pc, const MatchStatus &status)
-      : machine(machine), pc(pc), status(status) {}
+  Thread(const Machine &machine, int pc);
+
+  // Create a new thread with exact same state as this thread but a different
+  // program counter.
+  Thread Split(int new_pc);
 
   // Return true if the thread runs one instruction and successfully
   // consumes the input character referenced by sp.
   // Otherwise, the thread either runs a control instruction and succeeds
   // (it will call "AddReadyThread"), or runs a data instruction and fails.
-  bool RunOneStep(std::string::const_iterator sp, bool capture = true);
+  bool RunOneStep(StringPtr sp, bool capture = true);
 
  private:
   const Machine &machine;  // host machine
@@ -53,10 +56,10 @@ class Machine {
   MatchStatus Run(const std::string &s, bool capture = true) const;
 
   // Add a thread to run in this round.
-  void AddReadyThread(Thread &&thread) const { ready.push(thread); }
+  void AddReadyThread(const Thread &thread) const { ready.push(thread); }
 
   // Update match status.
-  void UpdateStatus(const MatchStatus &status) const;
+  void UpdateStatus(const MatchStatus &status_) const;
 
   // Fetch instruction by program counter(index).
   const InstrPtr FetchInstruction(int pc) const { return program[pc]; }
@@ -70,4 +73,4 @@ class Machine {
 
 };  // namespace Azuki
 
-#endif
+#endif  // __AZUKI_MACHINE__
