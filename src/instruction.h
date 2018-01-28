@@ -14,6 +14,7 @@ enum Opcode {
   ANY_SPACE,
   CHAR,
   MATCH,
+  RANGE,
   SAVE,
   SPLIT,
   JMP
@@ -26,10 +27,11 @@ struct Instruction {
   Opcode opcode;     // instruction opcode
 
   // Optional fields.
-  char c;             // character to match (CHAR)
-  unsigned int dst;   // destination instruction index (SPLIT and JMP)
-  bool greedy;        // if true, try dst before (idx + 1) (SPLIT)
-  unsigned int slot;  // slot to save string pointer (SAVE)
+  char c;               // character to match (CHAR)
+  unsigned int dst;     // destination instruction index (SPLIT and JMP)
+  bool greedy;          // if true, try dst before (idx + 1) (SPLIT)
+  unsigned int slot;    // index of slot to save string pointer (SAVE)
+  char low, high;       // character lower and upper bound (RANGE)
 
   Instruction(Opcode opcode) : opcode(opcode) {}
   string str();
@@ -45,6 +47,7 @@ InstrPtr CreateAnyDigitInstruction();
 InstrPtr CreateAnySpaceInstruction();
 InstrPtr CreateCharInstruction(char c);
 InstrPtr CreateMatchInstruction();
+InstrPtr CreateRangeInstruction(char low, char high);
 InstrPtr CreateSaveInstruction(int slot);
 InstrPtr CreateSplitInstruction(int dst, bool greedy = false);
 InstrPtr CreateJmpInstruction(int dst);

@@ -54,6 +54,9 @@ std::string Instruction::str() {
     case SPLIT:
       ss << "SPLIT I" << idx + 1 << " I" << dst;
       break;
+    case RANGE:
+      ss << "RANGE " << low << " " << high;
+      break;
     default:
       throw std::runtime_error("Unexpected instruction opcode.");
   }
@@ -101,6 +104,13 @@ InstrPtr CreateJmpInstruction(int dst) {
   return instr;
 }
 
+InstrPtr CreateRangeInstruction(char low, char high) {
+  InstrPtr instr(new Instruction(RANGE));
+  instr->low = low;
+  instr->high = high;
+  return instr;
+}
+
 int CalculateInstructionImpl(RegexpPtr rp);
 int CalculateInstruction(RegexpPtr rp) {
   return CalculateInstructionImpl(rp) + 1;  // the last instruction "MATCH"
@@ -128,6 +138,8 @@ int CalculateInstructionImpl(RegexpPtr rp) {
       return 1 + CalculateInstructionImpl(rp->left);
     case STAR:
       return 2 + CalculateInstructionImpl(rp->left);
+    case SQUARE:
+      return 1;
     default:
       throw std::runtime_error("Unexpected regexp type.");
   }
@@ -137,7 +149,7 @@ int CalculateInstructionImpl(RegexpPtr rp) {
 void Emit(Program &program, Context &context, RegexpPtr rp) {
   int &pc = context.pc;
   int &slot = context.slot;
-  
+
   if (rp->type == ALT) {
     int split_pc = pc++;
     Emit(program, context, rp->left);
@@ -180,6 +192,8 @@ void Emit(Program &program, Context &context, RegexpPtr rp) {
     Emit(program, context, rp->left);
     program[pc++] = CreateJmpInstruction(split_pc);
     program[split_pc] = CreateSplitInstruction(pc, true);
+  } else if (rp->type == SQUARE) {
+    program[pc++] = CreateRangeInstruction(rp->low, rp->high);
   } else {
     throw std::runtime_error("Unexpected regexp type.");
   }

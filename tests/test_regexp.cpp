@@ -3,6 +3,8 @@
 
 namespace Azuki {
 
+namespace {
+
 bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
   if (rp1->type != rp2->type) return false;
   switch (rp1->type) {
@@ -21,11 +23,15 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
       return IsEqualRegexp(rp1->left, rp2->left);
     case LIT:
       return rp1->c == rp2->c;
+    case SQUARE:
+      return rp1->low == rp2->low && rp1->high == rp2->high;
     default:
       return false;
   }
   return false;
 }
+
+};  // namespace
 
 TEST(RegexpTest, SimpleChar) {
   RegexpPtr r1 = ParseRegexp("a");
@@ -111,6 +117,15 @@ TEST(RegexTest, SimpleEscape1) {
 TEST(RegexTest, SimpleEscape2) {
   RegexpPtr r1 = ParseRegexp("\\?");
   RegexpPtr r2 = CreateLitRegexp('?');
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, SimpleSquare) {
+  RegexpPtr r1 = ParseRegexp("[a-c]+");
+  RegexpPtr r2 = CreatePlusRegexp(CreateSquareRegexp('a', 'c'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);

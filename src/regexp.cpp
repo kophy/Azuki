@@ -78,6 +78,14 @@ RegexpPtr CreateStarRegexp(RegexpPtr left) {
   return rp;
 }
 
+RegexpPtr CreateSquareRegexp(char low, char high) {
+  RegexpPtr rp(new Regexp());
+  rp->type = SQUARE;
+  rp->low = low;
+  rp->high = high;
+  return rp;
+}
+
 RegexpPtr CreateRegexpWithEscaped(char c) {
   // \w for wrod, \d for digit, \s for space
   static std::string class_char = "dsw";
@@ -113,6 +121,8 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
              (single >> "*")[_val = phx::bind(CreateStarRegexp, _1)] |
              single[_val = _1];
     single = ("(" >> regexp >> ")")[_val = phx::bind(CreateParenRegexp, _1)] |
+             ("[" >> char_ >> "-" >> char_ >>
+              "]")[_val = phx::bind(CreateSquareRegexp, _1, _2)] |
              ("\\" >> char_)[_val = phx::bind(CreateRegexpWithEscaped, _1)] |
              (alnum)[_val = phx::bind(CreateLitRegexp, _1)] |
              (space)[_val = phx::bind(CreateLitRegexp, _1)] |
@@ -170,6 +180,9 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
       std::cout << "STAR" << std::endl;
       PrintRegexpImpl(tab + 1, rp->left);
       break;
+    case SQUARE:
+      std::cout << "SQUARE " << rp->low << " " << rp->high << std::endl;
+      break;
     default:
       throw std::runtime_error("Unexpected regexp type.");
   }
@@ -192,6 +205,8 @@ bool IsValidRegexp(RegexpPtr rp) noexcept {
       case QUEST:
       case STAR:
         return IsValidRegexp(rp->left);
+      case SQUARE:
+        return rp->low <= rp->high;
       default:
         std::cerr << "Unexpected regexp type." << std::endl;
         return false;

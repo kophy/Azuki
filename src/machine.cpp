@@ -8,7 +8,7 @@ namespace {
 
 bool ConsumeCharacter(Opcode opcode) {
   return opcode == ANY || opcode == ANY_WORD || opcode == ANY_DIGIT ||
-         opcode == ANY_SPACE || opcode == CHAR;
+         opcode == ANY_SPACE || opcode == CHAR || opcode == RANGE;
 }
 
 };  // namespace
@@ -46,6 +46,8 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   } else if (opcode == MATCH) {
     status.success = true;
     machine.UpdateStatus(status);
+  } else if (opcode == RANGE) {
+    return (*sp) >= instr->low && (*sp) <= instr->high;
   } else if (opcode == SAVE) {
     if (capture) {
       if (status.saved.size() <= instr->slot)

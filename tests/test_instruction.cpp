@@ -98,4 +98,14 @@ TEST(InstructionTest, SimpleEscape) {
 #endif
 }
 
+TEST(InstructionTest, SimpleSquare) {
+  // "[a-c]+"
+  RegexpPtr rp = CreatePlusRegexp(CreateSquareRegexp('a', 'c'));
+  Program program = CompileRegexp(rp);
+  EXPECT_EQ(program.size(), 4);
+#ifdef DEBUG
+  PrintProgram(program);
+#endif
+}
+
 };  // namespace Azuki

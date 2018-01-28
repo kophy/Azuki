@@ -123,4 +123,14 @@ TEST(MachineTest, SimpleSpaceClass) {
   EXPECT_FALSE(m.Run("?a1").success);
 }
 
+TEST(MachineTest, SimpleRange) {
+  // match "[a-c]+"
+  RegexpPtr rp = CreatePlusRegexp(CreateSquareRegexp('a', 'c'));
+  Machine m = CreateMachineFromRegexp(rp);
+  EXPECT_TRUE(m.Run("abc").success);
+  EXPECT_TRUE(m.Run("cabac").success);
+  EXPECT_FALSE(m.Run("1a2").success);
+  EXPECT_FALSE(m.Run(" ab").success);
+}
+
 };  // namespace Azuki

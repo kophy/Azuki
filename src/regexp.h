@@ -5,17 +5,21 @@
 
 namespace Azuki {
 
-enum RegexpType { ALT, CAT, CLASS, DOT, LIT, PAREN, PLUS, QUEST, STAR };
+enum RegexpType { ALT, CAT, CLASS, DOT, LIT, PAREN, PLUS, QUEST, STAR, SQUARE };
 
 // A Regexp struct is like a binary tree node in the tree structure built from
 // raw regular expression.
 // A Regexp struct must contain a valid type field, while whether other fields
 // are valid depends on the Regexp type.
 struct Regexp {
+  // Required field(s).
   RegexpType type;
+
+  // Optional fields.
   char c;
   shared_ptr<Regexp> left;
   shared_ptr<Regexp> right;
+  char low, high;
 };
 
 typedef shared_ptr<Regexp> RegexpPtr;
@@ -30,6 +34,7 @@ RegexpPtr CreateParenRegexp(RegexpPtr left);
 RegexpPtr CreatePlusRegexp(RegexpPtr left);
 RegexpPtr CreateQuestRegexp(RegexpPtr left);
 RegexpPtr CreateStarRegexp(RegexpPtr left);
+RegexpPtr CreateSquareRegexp(char low, char high);
 
 // Build Regexp representation from raw regular expression.
 RegexpPtr ParseRegexp(const std::string &s);
