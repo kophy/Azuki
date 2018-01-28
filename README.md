@@ -23,6 +23,7 @@ The name `Azuki` is Japanese アズキ(read bean).
 | \w | match word character | \w+ | "a", "ab" | " ", "123" |
 | \d | match digit | \d+ | "123"  | " ", "ab" |
 | \s | match whitespace | \s+ | " ", "\t" | "ab", "123" |
+| [-] | match character in range | [a-c] | "a", "c" | "d", "1" |
 
 ## Example
 Suppose we want to match the Internet word for "laugh", 233(also 2333, 23333, ...), the regular expression can be "(233+)".
@@ -70,7 +71,7 @@ More examples can be found in `example` directory.
 - [ ] non-capturing group
 - [X] shorthand character classes(\\d, \\w, \\s)
 - [X] escape special characters('^', '$', '(', ')', etc)
-- [ ] character and numerical ranges([a-c], [1-2])
+- [X] character and numerical ranges([a-c], [1-2])
 - [ ] curly bracket quantification ({2, 5})
 - [ ] regex replace
 
