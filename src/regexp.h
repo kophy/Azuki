@@ -16,22 +16,20 @@ struct Regexp {
   char c;
   shared_ptr<Regexp> left;
   shared_ptr<Regexp> right;
-
-  Regexp(RegexpType type, char c = ' ') : type(type), c(c) {}
 };
 
 typedef shared_ptr<Regexp> RegexpPtr;
 
 // Convenience functions to create different Regexps.
-RegexpPtr CreateALTRegexp(RegexpPtr left, RegexpPtr right);
-RegexpPtr CreateCATRegexp(RegexpPtr left, RegexpPtr right);
-RegexpPtr CreateCLASSRegexp(char c);
-RegexpPtr CreateDOTRegexp();
-RegexpPtr CreateLITRegexp(char c);
-RegexpPtr CreatePARENRegexp(RegexpPtr left);
-RegexpPtr CreatePLUSRegexp(RegexpPtr left);
-RegexpPtr CreateQUESTRegexp(RegexpPtr left);
-RegexpPtr CreateSTARRegexp(RegexpPtr left);
+RegexpPtr CreateAltRegexp(RegexpPtr left, RegexpPtr right);
+RegexpPtr CreateCatRegexp(RegexpPtr left, RegexpPtr right);
+RegexpPtr CreateClassRegexp(char c);
+RegexpPtr CreateDotRegexp();
+RegexpPtr CreateLitRegexp(char c);
+RegexpPtr CreateParenRegexp(RegexpPtr left);
+RegexpPtr CreatePlusRegexp(RegexpPtr left);
+RegexpPtr CreateQuestRegexp(RegexpPtr left);
+RegexpPtr CreateStarRegexp(RegexpPtr left);
 
 // Build Regexp representation from raw regular expression.
 RegexpPtr ParseRegexp(const std::string &s);

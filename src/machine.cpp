@@ -4,7 +4,20 @@
 
 namespace Azuki {
 
-Thread::Thread(const Machine &machine, int pc) : machine(machine), pc(pc) {}
+namespace {
+
+bool ConsumeCharacter(Opcode opcode) {
+  return opcode == ANY || opcode == ANY_WORD || opcode == ANY_DIGIT ||
+         opcode == ANY_SPACE || opcode == CHAR;
+}
+
+};  // namespace
+
+Thread::Thread(const Machine &machine, int pc, unsigned int begin_idx)
+    : machine(machine), pc(pc) {
+  status.begin_idx = begin_idx;
+  status.end_idx = begin_idx;
+}
 
 Thread Thread::Split(int new_pc) {
   Thread t(*this);
@@ -15,6 +28,8 @@ Thread Thread::Split(int new_pc) {
 bool Thread::RunOneStep(StringPtr sp, bool capture) {
   InstrPtr instr = machine.FetchInstruction(pc++);
   Opcode opcode = instr->opcode;
+
+  if (ConsumeCharacter(opcode)) ++status.end_idx;
 
   if (opcode == ANY) {
     return true;
@@ -29,7 +44,7 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   } else if (opcode == JMP) {
     machine.AddReadyThread(this->Split(instr->dst));
   } else if (opcode == MATCH) {
-    status.match = true;
+    status.success = true;
     machine.UpdateStatus(status);
   } else if (opcode == SAVE) {
     if (capture) {
@@ -52,11 +67,6 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   return false;
 }
 
-MatchStatus::MatchStatus() {}
-
-MatchStatus::MatchStatus(bool match, const vector<StringPtr> &saved)
-    : match(match), saved(saved) {}
-
 Machine::Machine(const Program &program)
     : program(program), match_begin(false), match_end(false) {}
 
@@ -70,16 +80,16 @@ Machine &Machine::SetMatchEnd(bool b) {
   return *this;
 }
 
-MatchStatus Machine::Run(const std::string &s, bool capture) const {
+MatchStatus Machine::Run(const string &s, bool capture) const {
   ready = std::queue<Thread>();
-  status.match = false;
+  status.success = false;
 
-  if (match_begin) ready.push(Thread(*this, 0));
+  if (match_begin) ready.push(Thread(*this, 0, 0));
 
   // Need an extra character to finish ready threads.
   for (unsigned int idx = 0; idx <= s.size(); ++idx) {
     auto sp = s.begin() + idx;
-    if (!match_begin) ready.push(Thread(*this, 0));
+    if (!match_begin) ready.push(Thread(*this, 0, idx));
 
     std::queue<Thread> next;  // keep threads to run in next round
     while (!ready.empty()) {
@@ -88,10 +98,10 @@ MatchStatus Machine::Run(const std::string &s, bool capture) const {
 
       // If the thread successfully consumes the character, we need to save it
       // for next round.
-      if (t.RunOneStep(sp)) next.push(t);
-      if (status.match) {
+      if (t.RunOneStep(sp, capture)) next.push(t);
+      if (status.success) {
         if (match_end && idx != s.size()) {
-          status.match = false;
+          status.success = false;
         }
       }
     }
@@ -100,8 +110,20 @@ MatchStatus Machine::Run(const std::string &s, bool capture) const {
   return status;
 }
 
+// TODO: this part should be tested
 void Machine::UpdateStatus(const MatchStatus &status_) const {
-  status = status_;
+  if (!status.success) {
+    status = status_;
+  } else {
+    if (status.begin_idx < status_.begin_idx) {
+      return;
+    } else if (status.begin_idx > status_.begin_idx) {
+      status = status_;
+      return;
+    } else {
+      if (status.end_idx < status_.end_idx) status = status_;
+    }
+  }
 }
 
 };  // namespace Azuki

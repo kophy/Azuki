@@ -29,7 +29,7 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
 
 TEST(RegexpTest, SimpleChar) {
   RegexpPtr r1 = ParseRegexp("a");
-  RegexpPtr r2(new Regexp(LIT, 'a'));
+  RegexpPtr r2 = CreateLitRegexp('a');
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -38,9 +38,7 @@ TEST(RegexpTest, SimpleChar) {
 
 TEST(RegexpTest, SimpleCat) {
   RegexpPtr r1 = ParseRegexp("ab");
-  RegexpPtr r2(new Regexp(CAT));
-  r2->left.reset(new Regexp(LIT, 'a'));
-  r2->right.reset(new Regexp(LIT, 'b'));
+  RegexpPtr r2 = CreateCatRegexp(CreateLitRegexp('a'), CreateLitRegexp('b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -49,9 +47,7 @@ TEST(RegexpTest, SimpleCat) {
 
 TEST(RegexpTest, SimpleDot) {
   RegexpPtr r1 = ParseRegexp(".b");
-  RegexpPtr r2(new Regexp(CAT));
-  r2->left.reset(new Regexp(DOT));
-  r2->right.reset(new Regexp(LIT, 'b'));
+  RegexpPtr r2 = CreateCatRegexp(CreateDotRegexp(), CreateLitRegexp('b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -60,9 +56,7 @@ TEST(RegexpTest, SimpleDot) {
 
 TEST(RegexTest, SimpleAlt) {
   RegexpPtr r1 = ParseRegexp("a|b");
-  RegexpPtr r2(new Regexp(ALT));
-  r2->left.reset(new Regexp(LIT, 'a'));
-  r2->right.reset(new Regexp(LIT, 'b'));
+  RegexpPtr r2 = CreateAltRegexp(CreateLitRegexp('a'), CreateLitRegexp('b'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -71,8 +65,7 @@ TEST(RegexTest, SimpleAlt) {
 
 TEST(RegexTest, SimplePlus) {
   RegexpPtr r1 = ParseRegexp("a+");
-  RegexpPtr r2(new Regexp(PLUS));
-  r2->left.reset(new Regexp(LIT, 'a'));
+  RegexpPtr r2 = CreatePlusRegexp(CreateLitRegexp('a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -81,8 +74,7 @@ TEST(RegexTest, SimplePlus) {
 
 TEST(RegexTest, SimpleQuest) {
   RegexpPtr r1 = ParseRegexp("a?");
-  RegexpPtr r2(new Regexp(QUEST));
-  r2->left.reset(new Regexp(LIT, 'a'));
+  RegexpPtr r2 = CreateQuestRegexp(CreateLitRegexp('a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -91,8 +83,7 @@ TEST(RegexTest, SimpleQuest) {
 
 TEST(RegexTest, SimpleStar) {
   RegexpPtr r1 = ParseRegexp("a*");
-  RegexpPtr r2(new Regexp(STAR));
-  r2->left.reset(new Regexp(LIT, 'a'));
+  RegexpPtr r2 = CreateStarRegexp(CreateLitRegexp('a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -101,8 +92,7 @@ TEST(RegexTest, SimpleStar) {
 
 TEST(RegexTest, SimpleParen) {
   RegexpPtr r1 = ParseRegexp("(a)");
-  RegexpPtr r2(new Regexp(PAREN));
-  r2->left.reset(new Regexp(LIT, 'a'));
+  RegexpPtr r2 = CreateParenRegexp(CreateLitRegexp('a'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -111,8 +101,7 @@ TEST(RegexTest, SimpleParen) {
 
 TEST(RegexTest, SimpleEscape1) {
   RegexpPtr r1 = ParseRegexp("\\w+");
-  RegexpPtr r2(new Regexp(PLUS));
-  r2->left.reset(new Regexp(CLASS, 'w'));
+  RegexpPtr r2 = CreatePlusRegexp(CreateClassRegexp('w'));
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
@@ -121,7 +110,7 @@ TEST(RegexTest, SimpleEscape1) {
 
 TEST(RegexTest, SimpleEscape2) {
   RegexpPtr r1 = ParseRegexp("\\?");
-  RegexpPtr r2(new Regexp(LIT, '?'));
+  RegexpPtr r2 = CreateLitRegexp('?');
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);

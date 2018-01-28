@@ -20,6 +20,8 @@ Machine CreateMachine(const string &e);
 bool RegexSearch(const Machine &m, const string &s);
 bool RegexSearch(const Machine &m, const string &s, vector<string> &v);
 
+string RegexReplace(const Machine &m, const string &s, const string &r);
+
 };  // namespace Azuki
 
 #endif

@@ -10,8 +10,9 @@ TEST(InstructionTest, InvalidInstruction) {
 }
 
 TEST(InstructionTest, SingleChar) {
-  std::shared_ptr<Regexp> r(new Regexp(LIT, 'a'));
-  Program program = CompileRegexp(r);
+  // "a"
+  RegexpPtr rp = CreateLitRegexp('a');
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 2);
 #ifdef DEBUG
   PrintProgram(program);
@@ -19,10 +20,9 @@ TEST(InstructionTest, SingleChar) {
 }
 
 TEST(InstructionTest, SimpleCat) {
-  std::shared_ptr<Regexp> r(new Regexp(CAT));
-  r->left.reset(new Regexp(LIT, 'a'));
-  r->right.reset(new Regexp(LIT, 'b'));
-  Program program = CompileRegexp(r);
+  // "ab"
+  RegexpPtr rp = CreateCatRegexp(CreateLitRegexp('a'), CreateLitRegexp('b'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 3);
 #ifdef DEBUG
   PrintProgram(program);
@@ -30,10 +30,9 @@ TEST(InstructionTest, SimpleCat) {
 }
 
 TEST(InstructionTest, SimpleDot) {
-  std::shared_ptr<Regexp> r(new Regexp(CAT));
-  r->left.reset(new Regexp(DOT));
-  r->right.reset(new Regexp(LIT, 'b'));
-  Program program = CompileRegexp(r);
+  // ".b"
+  RegexpPtr rp = CreateCatRegexp(CreateDotRegexp(), CreateLitRegexp('b'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 3);
 #ifdef DEBUG
   PrintProgram(program);
@@ -41,10 +40,9 @@ TEST(InstructionTest, SimpleDot) {
 }
 
 TEST(InstructionTest, SimpleAlt) {
-  std::shared_ptr<Regexp> r(new Regexp(ALT));
-  r->left.reset(new Regexp(LIT, 'a'));
-  r->right.reset(new Regexp(LIT, 'b'));
-  Program program = CompileRegexp(r);
+  // "a|b"
+  RegexpPtr rp = CreateAltRegexp(CreateDotRegexp(), CreateLitRegexp('b'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 5);
 #ifdef DEBUG
   PrintProgram(program);
@@ -52,18 +50,18 @@ TEST(InstructionTest, SimpleAlt) {
 }
 
 TEST(InstructionTest, SimplePlus) {
-  std::shared_ptr<Regexp> r(new Regexp(PLUS));
-  r->left.reset(new Regexp(LIT, 'a'));
-  Program program = CompileRegexp(r);
+  // "a+"
+  RegexpPtr rp = CreatePlusRegexp(CreateLitRegexp('a'));
+  Program program = CompileRegexp(rp);
 #ifdef DEBUG
   PrintProgram(program);
 #endif
 }
 
 TEST(InstructionTest, SimpleQuest) {
-  std::shared_ptr<Regexp> r(new Regexp(QUEST));
-  r->left.reset(new Regexp(LIT, 'a'));
-  Program program = CompileRegexp(r);
+  // "a?"
+  RegexpPtr rp = CreateQuestRegexp(CreateLitRegexp('a'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 3);
 #ifdef DEBUG
   PrintProgram(program);
@@ -71,9 +69,9 @@ TEST(InstructionTest, SimpleQuest) {
 }
 
 TEST(InstructionTest, SimpleStar) {
-  std::shared_ptr<Regexp> r(new Regexp(STAR));
-  r->left.reset(new Regexp(LIT, 'a'));
-  Program program = CompileRegexp(r);
+  // "a*"
+  RegexpPtr rp = CreateStarRegexp(CreateLitRegexp('a'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 4);
 #ifdef DEBUG
   PrintProgram(program);
@@ -81,9 +79,9 @@ TEST(InstructionTest, SimpleStar) {
 }
 
 TEST(InstructionTest, SimpleParen) {
-  std::shared_ptr<Regexp> r(new Regexp(PAREN));
-  r->left.reset(new Regexp(LIT, 'a'));
-  Program program = CompileRegexp(r);
+  // "(b)"
+  RegexpPtr rp = CreateParenRegexp(CreateLitRegexp('a'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 4);
 #ifdef DEBUG
   PrintProgram(program);
@@ -91,9 +89,9 @@ TEST(InstructionTest, SimpleParen) {
 }
 
 TEST(InstructionTest, SimpleEscape) {
-  std::shared_ptr<Regexp> r(new Regexp(PLUS));
-  r->left.reset(new Regexp(CLASS, 'w'));
-  Program program = CompileRegexp(r);
+  // "\w+"
+  RegexpPtr rp = CreatePlusRegexp(CreateClassRegexp('w'));
+  Program program = CompileRegexp(rp);
   EXPECT_EQ(program.size(), 4);
 #ifdef DEBUG
   PrintProgram(program);

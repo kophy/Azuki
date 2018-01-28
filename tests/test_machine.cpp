@@ -3,6 +3,8 @@
 
 namespace Azuki {
 
+namespace {
+
 Machine CreateMachineFromRegexp(RegexpPtr r) {
   Program program = CompileRegexp(r);
   Machine m(program);
@@ -10,129 +12,115 @@ Machine CreateMachineFromRegexp(RegexpPtr r) {
   return m;
 }
 
+};  // namespace
+
 TEST(MachineTest, SingleChar) {
   // match "a"
-  RegexpPtr rp(new Regexp(LIT, 'a'));
+  RegexpPtr rp = CreateLitRegexp('a');
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("a").match);
-  EXPECT_TRUE(m.Run("abc").match);
-  EXPECT_FALSE(m.Run("b").match);
-  EXPECT_FALSE(m.Run("bac").match);
+  EXPECT_TRUE(m.Run("a").success);
+  EXPECT_TRUE(m.Run("abc").success);
+  EXPECT_FALSE(m.Run("b").success);
+  EXPECT_FALSE(m.Run("bac").success);
 }
 
 TEST(MachineTest, SimpleCat) {
   // match "ab"
-  RegexpPtr rp(new Regexp(CAT));
-  rp->left.reset(new Regexp(LIT, 'a'));
-  rp->right.reset(new Regexp(LIT, 'b'));
+  RegexpPtr rp = CreateCatRegexp(CreateLitRegexp('a'), CreateLitRegexp('b'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("ab").match);
-  EXPECT_TRUE(m.Run("abc").match);
-  EXPECT_FALSE(m.Run("a").match);
-  EXPECT_FALSE(m.Run("bab").match);
+  EXPECT_TRUE(m.Run("ab").success);
+  EXPECT_TRUE(m.Run("abc").success);
+  EXPECT_FALSE(m.Run("a").success);
+  EXPECT_FALSE(m.Run("bab").success);
 }
 
 TEST(MachineTest, SimpleDot) {
   // match ".b"
-  RegexpPtr rp(new Regexp(CAT));
-  rp->left.reset(new Regexp(DOT));
-  rp->right.reset(new Regexp(LIT, 'b'));
+  RegexpPtr rp = CreateCatRegexp(CreateDotRegexp(), CreateLitRegexp('b'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("ab").match);
-  EXPECT_TRUE(m.Run("cba").match);
-  EXPECT_FALSE(m.Run("b").match);
-  EXPECT_FALSE(m.Run("cab").match);
+  EXPECT_TRUE(m.Run("ab").success);
+  EXPECT_TRUE(m.Run("cba").success);
+  EXPECT_FALSE(m.Run("b").success);
+  EXPECT_FALSE(m.Run("cab").success);
 }
 
 TEST(MachineTest, SimpleSplit) {
   // match "a|b"
-  RegexpPtr rp(new Regexp(ALT));
-  rp->left.reset(new Regexp(LIT, 'a'));
-  rp->right.reset(new Regexp(LIT, 'b'));
+  RegexpPtr rp = CreateAltRegexp(CreateLitRegexp('a'), CreateLitRegexp('b'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("a").match);
-  EXPECT_TRUE(m.Run("b").match);
-  EXPECT_FALSE(m.Run("c").match);
+  EXPECT_TRUE(m.Run("a").success);
+  EXPECT_TRUE(m.Run("b").success);
+  EXPECT_FALSE(m.Run("c").success);
 }
 
 TEST(MachineTest, SimplePlus) {
   // match "a+"
-  RegexpPtr rp(new Regexp(PLUS));
-  rp->left.reset(new Regexp(LIT, 'a'));
+  RegexpPtr rp = CreatePlusRegexp(CreateLitRegexp('a'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("a").match);
-  EXPECT_TRUE(m.Run("aa").match);
-  EXPECT_FALSE(m.Run("b").match);
+  EXPECT_TRUE(m.Run("a").success);
+  EXPECT_TRUE(m.Run("aa").success);
+  EXPECT_FALSE(m.Run("b").success);
 }
 
 TEST(MachineTest, SimpleQuest) {
   // match "a?b"
-  RegexpPtr rp(new Regexp(CAT));
-  rp->left.reset(new Regexp(QUEST));
-  rp->left->left.reset(new Regexp(LIT, 'a'));
-  rp->right.reset(new Regexp(LIT, 'b'));
+  auto left = CreateQuestRegexp(CreateLitRegexp('a'));
+  RegexpPtr rp = CreateCatRegexp(left, CreateLitRegexp('b'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("b").match);
-  EXPECT_TRUE(m.Run("ab").match);
-  EXPECT_FALSE(m.Run("cab").match);
+  EXPECT_TRUE(m.Run("b").success);
+  EXPECT_TRUE(m.Run("ab").success);
+  EXPECT_FALSE(m.Run("cab").success);
 }
 
 TEST(MachineTest, SimpleStar) {
   // match "a*b"
-  RegexpPtr rp(new Regexp(CAT));
-  rp->left.reset(new Regexp(STAR));
-  rp->left->left.reset(new Regexp(LIT, 'a'));
-  rp->right.reset(new Regexp(LIT, 'b'));
+  auto left = CreateStarRegexp(CreateLitRegexp('a'));
+  RegexpPtr rp = CreateCatRegexp(left, CreateLitRegexp('b'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("b").match);
-  EXPECT_TRUE(m.Run("ab").match);
-  EXPECT_TRUE(m.Run("aaab").match);
-  EXPECT_FALSE(m.Run("cab").match);
+  EXPECT_TRUE(m.Run("b").success);
+  EXPECT_TRUE(m.Run("ab").success);
+  EXPECT_TRUE(m.Run("aaab").success);
+  EXPECT_FALSE(m.Run("cab").success);
 }
 
 TEST(MachineTest, SimpleParen) {
   // match "(a+)"
-  RegexpPtr rp(new Regexp(PAREN));
-  rp->left.reset(new Regexp(PLUS));
-  rp->left->left.reset(new Regexp(LIT, 'a'));
+  RegexpPtr rp = CreateParenRegexp(CreatePlusRegexp(CreateLitRegexp('a')));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("a").match);
-  EXPECT_TRUE(m.Run("aa").match);
-  EXPECT_FALSE(m.Run("b").match);
-  EXPECT_FALSE(m.Run("baac").match);
+  EXPECT_TRUE(m.Run("a").success);
+  EXPECT_TRUE(m.Run("aa").success);
+  EXPECT_FALSE(m.Run("b").success);
+  EXPECT_FALSE(m.Run("baac").success);
 }
 
 TEST(MachineTest, SimpleWordClass) {
   // match "\w+"
-  RegexpPtr rp(new Regexp(PLUS));
-  rp->left.reset(new Regexp(CLASS, 'w'));
+  RegexpPtr rp = CreatePlusRegexp(CreateClassRegexp('w'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("ab_12").match);
-  EXPECT_TRUE(m.Run("12_ab").match);
-  EXPECT_FALSE(m.Run("\ta1").match);
-  EXPECT_FALSE(m.Run("?a1").match);
+  EXPECT_TRUE(m.Run("ab_12").success);
+  EXPECT_TRUE(m.Run("12_ab").success);
+  EXPECT_FALSE(m.Run("\ta1").success);
+  EXPECT_FALSE(m.Run("?a1").success);
 }
 
 TEST(MachineTest, SimpleDigitClass) {
   // match "\d+"
-  RegexpPtr rp(new Regexp(PLUS));
-  rp->left.reset(new Regexp(CLASS, 'd'));
+  RegexpPtr rp = CreatePlusRegexp(CreateClassRegexp('d'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("1234").match);
-  EXPECT_TRUE(m.Run("023").match);
-  EXPECT_FALSE(m.Run(" 12").match);
-  EXPECT_FALSE(m.Run("a1").match);
+  EXPECT_TRUE(m.Run("1234").success);
+  EXPECT_TRUE(m.Run("023").success);
+  EXPECT_FALSE(m.Run(" 12").success);
+  EXPECT_FALSE(m.Run("a1").success);
 }
 
 TEST(MachineTest, SimpleSpaceClass) {
   // match "\s+"
-  RegexpPtr rp(new Regexp(PLUS));
-  rp->left.reset(new Regexp(CLASS, 's'));
+  RegexpPtr rp = CreatePlusRegexp(CreateClassRegexp('s'));
   Machine m = CreateMachineFromRegexp(rp);
-  EXPECT_TRUE(m.Run("  a1").match);
-  EXPECT_TRUE(m.Run("\t\ra1").match);
-  EXPECT_FALSE(m.Run("a1").match);
-  EXPECT_FALSE(m.Run("?a1").match);
+  EXPECT_TRUE(m.Run("  a1").success);
+  EXPECT_TRUE(m.Run("\t\ra1").success);
+  EXPECT_FALSE(m.Run("a1").success);
+  EXPECT_FALSE(m.Run("?a1").success);
 }
 
 };  // namespace Azuki

@@ -22,8 +22,8 @@ enum Opcode {
 // The instruction struct encodes information to run an instruction.
 struct Instruction {
   // Required fields.
-  unsigned int idx;   // instruction index
-  Opcode opcode;      // instruction opcode
+  unsigned int idx;  // instruction index
+  Opcode opcode;     // instruction opcode
 
   // Optional fields.
   char c;             // character to match (CHAR)

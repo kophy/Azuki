@@ -11,67 +11,70 @@ namespace phx = boost::phoenix;
 namespace qi = boost::spirit::qi;
 
 // A wrapper to handle arbitrary escaped character.
-// Either CreateCLASSRegexp or CreateLITRegexp is called to create the Regexp.
+// Either CreateClassRegexp or CreateLitRegexp is called to create the Regexp.
 RegexpPtr CreateRegexpWithEscaped(char c);
 
-RegexpPtr CreateALTRegexp(RegexpPtr left, RegexpPtr right) {
-  RegexpPtr rp(new Regexp(ALT));
+RegexpPtr CreateAltRegexp(RegexpPtr left, RegexpPtr right) {
+  RegexpPtr rp(new Regexp());
+  rp->type = ALT;
   rp->left = left;
   rp->right = right;
   return rp;
 }
 
-RegexpPtr CreateCATRegexp(RegexpPtr left, RegexpPtr right) {
-  RegexpPtr rp(new Regexp(CAT));
+RegexpPtr CreateCatRegexp(RegexpPtr left, RegexpPtr right) {
+  RegexpPtr rp(new Regexp());
+  rp->type = CAT;
   rp->left = left;
   rp->right = right;
   return rp;
 }
 
-RegexpPtr CreateCLASSRegexp(char c) {
-  RegexpPtr rp(new Regexp(CLASS, c));
+RegexpPtr CreateClassRegexp(char c) {
+  RegexpPtr rp(new Regexp());
+  rp->type = CLASS;
+  rp->c = c;
   return rp;
 }
 
-RegexpPtr CreateDOTRegexp() {
-  RegexpPtr rp(new Regexp(DOT));
+RegexpPtr CreateDotRegexp() {
+  RegexpPtr rp(new Regexp());
+  rp->type = DOT;
   return rp;
 }
 
-RegexpPtr CreateLITRegexp(char c) {
-  RegexpPtr rp(new Regexp(LIT, c));
+RegexpPtr CreateLitRegexp(char c) {
+  RegexpPtr rp(new Regexp());
+  rp->type = LIT;
+  rp->c = c;
   return rp;
 }
 
-RegexpPtr CreatePARENRegexp(RegexpPtr left) {
-  RegexpPtr rp(new Regexp(PAREN));
+RegexpPtr CreateParenRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp());
+  rp->type = PAREN;
   rp->left = left;
   return rp;
 }
 
-RegexpPtr CreatePLUSRegexp(RegexpPtr left) {
-  RegexpPtr rp(new Regexp(PLUS));
+RegexpPtr CreatePlusRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp());
+  rp->type = PLUS;
   rp->left = left;
   return rp;
 }
 
-RegexpPtr CreateQUESTRegexp(RegexpPtr left) {
-  RegexpPtr rp(new Regexp(QUEST));
+RegexpPtr CreateQuestRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp());
+  rp->type = QUEST;
   rp->left = left;
   return rp;
 }
 
-RegexpPtr CreateSTARRegexp(RegexpPtr left) {
-  RegexpPtr rp(new Regexp(STAR));
+RegexpPtr CreateStarRegexp(RegexpPtr left) {
+  RegexpPtr rp(new Regexp());
+  rp->type = STAR;
   rp->left = left;
-  return rp;
-}
-
-RegexpPtr CreateRegexp(RegexpType type, char c, RegexpPtr left,
-                       RegexpPtr right) {
-  RegexpPtr rp(new Regexp(type, c));
-  rp->left = left;
-  rp->right = right;
   return rp;
 }
 
@@ -82,9 +85,9 @@ RegexpPtr CreateRegexpWithEscaped(char c) {
   static std::string special_char = ".+?*|\\()[]";
 
   if (class_char.find(c) != std::string::npos)
-    return CreateCLASSRegexp(c);
+    return CreateClassRegexp(c);
   else if (special_char.find(c) != std::string::npos)
-    return CreateLITRegexp(c);
+    return CreateLitRegexp(c);
   else
     throw std::runtime_error("Invalid escaped character.");
 }
@@ -101,20 +104,20 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
     using namespace qi;
 
     regexp = alt[_val = _1];
-    alt = (concat >> "|" >> alt)[_val = phx::bind(CreateALTRegexp, _1, _2)] |
+    alt = (concat >> "|" >> alt)[_val = phx::bind(CreateAltRegexp, _1, _2)] |
           concat[_val = _1];
-    concat = (repeat >> concat)[_val = phx::bind(CreateCATRegexp, _1, _2)] |
+    concat = (repeat >> concat)[_val = phx::bind(CreateCatRegexp, _1, _2)] |
              repeat[_val = _1];
-    repeat = (single >> "+")[_val = phx::bind(CreatePLUSRegexp, _1)] |
-             (single >> "?")[_val = phx::bind(CreateQUESTRegexp, _1)] |
-             (single >> "*")[_val = phx::bind(CreateSTARRegexp, _1)] |
+    repeat = (single >> "+")[_val = phx::bind(CreatePlusRegexp, _1)] |
+             (single >> "?")[_val = phx::bind(CreateQuestRegexp, _1)] |
+             (single >> "*")[_val = phx::bind(CreateStarRegexp, _1)] |
              single[_val = _1];
-    single = ("(" >> regexp >> ")")[_val = phx::bind(CreatePARENRegexp, _1)] |
+    single = ("(" >> regexp >> ")")[_val = phx::bind(CreateParenRegexp, _1)] |
              ("\\" >> char_)[_val = phx::bind(CreateRegexpWithEscaped, _1)] |
-             (alnum)[_val = phx::bind(CreateLITRegexp, _1)] |
-             (space)[_val = phx::bind(CreateLITRegexp, _1)] |
-             (char_("~!@#%&=:;,_<>-"))[_val = phx::bind(CreateLITRegexp, _1)] |
-             char_('.')[_val = CreateDOTRegexp()];
+             (alnum)[_val = phx::bind(CreateLitRegexp, _1)] |
+             (space)[_val = phx::bind(CreateLitRegexp, _1)] |
+             (char_("~!@#%&=:;,_<>-"))[_val = phx::bind(CreateLitRegexp, _1)] |
+             char_('.')[_val = CreateDotRegexp()];
   }
 };
 

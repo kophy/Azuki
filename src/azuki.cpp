@@ -26,12 +26,12 @@ Machine CreateMachine(const string &e) {
 
 bool RegexSearch(const Machine &m, const string &s) {
   auto status = m.Run(s);
-  return status.match;
+  return status.success;
 }
 
 bool RegexSearch(const Machine &m, const string &s, vector<string> &v) {
   auto status = m.Run(s);
-  if (!status.match) return false;
+  if (!status.success) return false;
   for (unsigned int i = 0; i < status.saved.size(); i += 2)
     v.push_back(string(status.saved[i], status.saved[i + 1]));
   return true;

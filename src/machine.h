@@ -9,11 +9,12 @@ namespace Azuki {
 
 // The MatchStatus struct is used to hold results of regexp match.
 struct MatchStatus {
-  bool match;
-  vector<StringPtr> saved;  // save capturing groups
+  bool success;
+  unsigned int begin_idx;
+  unsigned int end_idx;
+  vector<StringPtr> saved;  // saved capturing groups
 
-  MatchStatus();
-  MatchStatus(bool match, const vector<StringPtr> &saved);
+  MatchStatus() : success(false) {}
 };
 
 class Machine;  // forward declaration
@@ -22,11 +23,11 @@ class Machine;  // forward declaration
 // Each thread keeps its own program counter and match status.
 class Thread {
  public:
-  Thread(const Machine &machine, int pc);
+  Thread(const Machine &machine, int pc, unsigned int begin_idx);
 
   // Create a new thread with exact same state as this thread but a different
   // program counter.
-  Thread Split(int new_pc);
+  Thread Split(int other_pc);
 
   // Return true if the thread runs one instruction and successfully
   // consumes the input character referenced by sp.
@@ -53,7 +54,7 @@ class Machine {
   Machine &SetMatchEnd(bool b);
 
   // Run program on input string s (with Rob Pike's implementation).
-  MatchStatus Run(const std::string &s, bool capture = true) const;
+  MatchStatus Run(const string &s, bool capture = true) const;
 
   // Add a thread to run in this round.
   void AddReadyThread(const Thread &thread) const { ready.push(thread); }
