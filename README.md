@@ -1,6 +1,6 @@
 # Azuki
 
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyperium/hyper/master/LICENSE)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/kophy/Azuki)
 
 Azuki is a simple regular expression engine implemented with virtual machine approach.  
 Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。  
