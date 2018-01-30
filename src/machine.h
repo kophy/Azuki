@@ -22,13 +22,13 @@ class Machine;  // forward declaration
 
 // The Thread class implements threads to be run in the virtual machine.
 // Each thread keeps its own program counter and match status.
-class Thread {
+class Thread : public std::enable_shared_from_this<Thread> {
  public:
   Thread(const Machine &machine, int pc, unsigned int begin_idx);
 
   // Create a new thread with exact same state as this thread but a different
   // program counter.
-  Thread Split(int other_pc);
+  shared_ptr<Thread> Split(int other_pc);
 
   // Return true if the thread runs one instruction and successfully
   // consumes the input character referenced by sp.
@@ -41,6 +41,8 @@ class Thread {
   int pc;                  // program counter
   MatchStatus status;      // this thread's match status
 };
+
+typedef shared_ptr<Thread> ThreadPtr;
 
 // The Machine class implements a virtual machine to run Thompson's algorithm.
 // It maintains a collection of threads ready to run, and these threads are run
@@ -58,7 +60,7 @@ class Machine {
   MatchStatus Run(const string &s, bool capture = true) const;
 
   // Add a thread to run in this round.
-  void AddReadyThread(const Thread &thread) const { ready.push(thread); }
+  void AddReadyThread(ThreadPtr tp) const { ready.push(tp); }
 
   // Update match status.
   void UpdateStatus(const MatchStatus &status_) const;
@@ -68,9 +70,9 @@ class Machine {
 
  private:
   const Program program;
-  mutable std::queue<Thread> ready;  // keep threads to run in current iteration
-  mutable MatchStatus status;        // keep regex match status
-  bool match_begin, match_end;       // flags to control positonal match
+  mutable std::queue<ThreadPtr> ready;  // threads to run in current iteration
+  mutable MatchStatus status;           // match status
+  bool match_begin, match_end;          // flags to control positonal match
 };
 
 };  // namespace Azuki

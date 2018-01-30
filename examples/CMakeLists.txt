@@ -9,3 +9,8 @@ add_executable(domain_name domain_name.cpp)
 target_link_libraries(domain_name
   azuki
 )
+
+add_executable(cellphone cellphone.cpp)
+target_link_libraries(cellphone
+  azuki
+)

@@ -241,4 +241,33 @@ bool IsValidRegexp(RegexpPtr rp) noexcept {
   return false;
 }
 
+bool operator==(RegexpPtr rp1, RegexpPtr rp2) {
+  if (rp1->type != rp2->type) return false;
+  switch (rp1->type) {
+    case ALT:
+    case CAT:
+      return rp1->left == rp2->left && rp1->right == rp2->right;
+    case CLASS:
+      return rp1->c == rp2->c;
+    case CURLY:
+      return rp1->low_times == rp2->low_times &&
+             rp1->high_times == rp2->high_times && rp1->left == rp2->left;
+    case DOT:
+      return true;
+    case PAREN:
+    case PLUS:
+    case QUEST:
+    case STAR:
+      return rp1->left == rp2->left;
+    case LIT:
+      return rp1->c == rp2->c;
+    case SQUARE:
+      return rp1->low_ch == rp2->low_ch && rp1->high_ch == rp2->high_ch;
+    default:
+      std::cerr << "Unexpected regexp type." << std::endl;
+      return false;
+  }
+  return false;
+}
+
 };  // namespace Azuki

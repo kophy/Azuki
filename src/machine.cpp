@@ -19,10 +19,10 @@ Thread::Thread(const Machine &machine, int pc, unsigned int begin_idx)
   status.end_idx = begin_idx;
 }
 
-Thread Thread::Split(int new_pc) {
-  Thread t(*this);
-  t.pc = new_pc;
-  return t;
+ThreadPtr Thread::Split(int other_pc) {
+  ThreadPtr tp(new Thread(*this));
+  tp->pc = other_pc;
+  return tp;
 }
 
 bool Thread::RunOneStep(StringPtr sp, bool capture) {
@@ -44,10 +44,10 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   } else if (opcode == CHECK) {
     if (status.repeated[instr->counter] >= instr->low_times &&
         status.repeated[instr->counter] <= instr->high_times)
-      machine.AddReadyThread(this->Split(pc));
+      machine.AddReadyThread(shared_from_this());
   } else if (opcode == INCR) {
-      ++status.repeated[instr->counter];
-      machine.AddReadyThread(this->Split(pc));
+    ++status.repeated[instr->counter];
+    machine.AddReadyThread(shared_from_this());
   } else if (opcode == JMP) {
     machine.AddReadyThread(this->Split(instr->dst));
   } else if (opcode == MATCH) {
@@ -61,18 +61,18 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
         status.saved.resize(instr->slot + 1);
       status.saved[instr->slot] = sp;
     }
-    machine.AddReadyThread(this->Split(pc));
+    machine.AddReadyThread(shared_from_this());
   } else if (opcode == SET) {
     if (status.repeated.size() <= instr->counter)
       status.repeated.resize(instr->counter + 1);
     status.repeated[instr->counter] = instr->value;
-    machine.AddReadyThread(this->Split(pc));
+    machine.AddReadyThread(shared_from_this());
   } else if (opcode == SPLIT) {
     if (instr->greedy) {
       machine.AddReadyThread(this->Split(instr->dst));
-      machine.AddReadyThread(this->Split(pc));
+      machine.AddReadyThread(shared_from_this());
     } else {
-      machine.AddReadyThread(this->Split(pc));
+      machine.AddReadyThread(shared_from_this());
       machine.AddReadyThread(this->Split(instr->dst));
     }
   } else {
@@ -95,24 +95,24 @@ Machine &Machine::SetMatchEnd(bool b) {
 }
 
 MatchStatus Machine::Run(const string &s, bool capture) const {
-  ready = std::queue<Thread>();
+  ready = std::queue<ThreadPtr>();
   status.success = false;
 
-  if (match_begin) ready.push(Thread(*this, 0, 0));
+  if (match_begin) ready.push(ThreadPtr(new Thread(*this, 0, 0)));
 
   // Need an extra character to finish ready threads.
   for (unsigned int idx = 0; idx <= s.size(); ++idx) {
     auto sp = s.begin() + idx;
-    if (!match_begin) ready.push(Thread(*this, 0, idx));
+    if (!match_begin) ready.push(ThreadPtr(new Thread(*this, 0, idx)));
 
-    std::queue<Thread> next;  // keep threads to run in next round
+    std::queue<ThreadPtr> next;  // keep threads to run in next round
     while (!ready.empty()) {
-      Thread t = ready.front();
+      ThreadPtr tp = ready.front();
       ready.pop();
 
       // If the thread successfully consumes the character, we need to save it
       // for next round.
-      if (t.RunOneStep(sp, capture)) next.push(t);
+      if (tp->RunOneStep(sp, capture)) next.push(tp);
       if (status.success) {
         if (match_end && idx != s.size()) {
           status.success = false;

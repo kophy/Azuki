@@ -50,6 +50,9 @@ RegexpPtr CreateQuestRegexp(RegexpPtr left);
 RegexpPtr CreateStarRegexp(RegexpPtr left);
 RegexpPtr CreateSquareRegexp(char low_ch, char high_ch);
 
+// Check the equality of two Regexp.
+bool operator==(RegexpPtr rp1, RegexpPtr rp2);
+
 // Build Regexp representation from raw regular expression.
 RegexpPtr ParseRegexp(const std::string &s);
 
