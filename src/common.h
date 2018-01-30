@@ -3,10 +3,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Azuki {
 
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::vector;

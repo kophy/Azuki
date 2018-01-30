@@ -108,4 +108,14 @@ TEST(InstructionTest, SimpleSquare) {
 #endif
 }
 
+TEST(InstructionTest, SimpleCurly) {
+  // "a{3,5}"
+  RegexpPtr rp = ParseRegexp("a{3,5}");
+  Program program = CompileRegexp(rp);
+  EXPECT_EQ(program.size(), 7);
+#ifndef DEBUG
+  PrintProgram(program);
+#endif
+}
+
 };  // namespace Azuki

@@ -41,19 +41,31 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
     return isspace(*sp);
   } else if (opcode == CHAR) {
     return (instr->c == *sp);
+  } else if (opcode == CHECK) {
+    if (status.repeated[instr->counter] >= instr->low_times &&
+        status.repeated[instr->counter] <= instr->high_times)
+      machine.AddReadyThread(this->Split(pc));
+  } else if (opcode == INCR) {
+      ++status.repeated[instr->counter];
+      machine.AddReadyThread(this->Split(pc));
   } else if (opcode == JMP) {
     machine.AddReadyThread(this->Split(instr->dst));
   } else if (opcode == MATCH) {
     status.success = true;
     machine.UpdateStatus(status);
   } else if (opcode == RANGE) {
-    return (*sp) >= instr->low && (*sp) <= instr->high;
+    return (*sp) >= instr->low_ch && (*sp) <= instr->high_ch;
   } else if (opcode == SAVE) {
     if (capture) {
       if (status.saved.size() <= instr->slot)
         status.saved.resize(instr->slot + 1);
       status.saved[instr->slot] = sp;
     }
+    machine.AddReadyThread(this->Split(pc));
+  } else if (opcode == SET) {
+    if (status.repeated.size() <= instr->counter)
+      status.repeated.resize(instr->counter + 1);
+    status.repeated[instr->counter] = instr->value;
     machine.AddReadyThread(this->Split(pc));
   } else if (opcode == SPLIT) {
     if (instr->greedy) {

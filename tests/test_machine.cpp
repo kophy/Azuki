@@ -133,4 +133,14 @@ TEST(MachineTest, SimpleRange) {
   EXPECT_FALSE(m.Run(" ab").success);
 }
 
+TEST(MachineTest, SimpleCurly) {
+  // match "a{3, 5}"
+  RegexpPtr rp = CreateCurlyRegexp(CreateLitRegexp('a'), 3, 5);
+  Machine m = CreateMachineFromRegexp(rp);
+  EXPECT_TRUE(m.Run("aaa").success);
+  EXPECT_TRUE(m.Run("aaaaa").success);
+  EXPECT_FALSE(m.Run("aa").success);
+  EXPECT_FALSE(m.Run("ab").success);
+}
+
 };  // namespace Azuki

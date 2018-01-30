@@ -1,6 +1,7 @@
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <climits>
 #include <iostream>
 #include "regexp.h"
 
@@ -78,11 +79,20 @@ RegexpPtr CreateStarRegexp(RegexpPtr left) {
   return rp;
 }
 
-RegexpPtr CreateSquareRegexp(char low, char high) {
+RegexpPtr CreateSquareRegexp(char low_ch, char high_ch) {
   RegexpPtr rp(new Regexp());
   rp->type = SQUARE;
-  rp->low = low;
-  rp->high = high;
+  rp->low_ch = low_ch;
+  rp->high_ch = high_ch;
+  return rp;
+}
+
+RegexpPtr CreateCurlyRegexp(RegexpPtr left, int low_times, int high_times) {
+  RegexpPtr rp(new Regexp());
+  rp->type = CURLY;
+  rp->left = left;
+  rp->low_times = low_times;
+  rp->high_times = high_times;
   return rp;
 }
 
@@ -90,7 +100,7 @@ RegexpPtr CreateRegexpWithEscaped(char c) {
   // \w for wrod, \d for digit, \s for space
   static std::string class_char = "dsw";
   // only character used as operators can be escaped
-  static std::string special_char = ".+?*|\\()[]";
+  static std::string special_char = ".+?*|\\()[]{}";
 
   if (class_char.find(c) != std::string::npos)
     return CreateClassRegexp(c);
@@ -107,6 +117,7 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
   qi::rule<Iterator, RegexpPtr()> concat;
   qi::rule<Iterator, RegexpPtr()> repeat;
   qi::rule<Iterator, RegexpPtr()> single;
+  qi::rule<Iterator, int()> number;
 
   regexp_grammer() : regexp_grammer::base_type(regexp) {
     using namespace qi;
@@ -116,10 +127,17 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
           concat[_val = _1];
     concat = (repeat >> concat)[_val = phx::bind(CreateCatRegexp, _1, _2)] |
              repeat[_val = _1];
-    repeat = (single >> "+")[_val = phx::bind(CreatePlusRegexp, _1)] |
-             (single >> "?")[_val = phx::bind(CreateQuestRegexp, _1)] |
-             (single >> "*")[_val = phx::bind(CreateStarRegexp, _1)] |
-             single[_val = _1];
+    repeat =
+        (single >> "{" >> int_ >>
+         "}")[_val = phx::bind(CreateCurlyRegexp, _1, _2, _2)] |
+        (single >> "{" >> int_ >> "," >> int_ >>
+         "}")[_val = phx::bind(CreateCurlyRegexp, _1, _2, _3)] |
+        (single >> "{" >> int_ >>
+         ",}")[_val = phx::bind(CreateCurlyRegexp, _1, _2, phx::val(INT_MAX))] |
+        (single >> "+")[_val = phx::bind(CreatePlusRegexp, _1)] |
+        (single >> "?")[_val = phx::bind(CreateQuestRegexp, _1)] |
+        (single >> "*")[_val = phx::bind(CreateStarRegexp, _1)] |
+        single[_val = _1];
     single = ("(" >> regexp >> ")")[_val = phx::bind(CreateParenRegexp, _1)] |
              ("[" >> char_ >> "-" >> char_ >>
               "]")[_val = phx::bind(CreateSquareRegexp, _1, _2)] |
@@ -128,6 +146,7 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
              (space)[_val = phx::bind(CreateLitRegexp, _1)] |
              (char_("~!@#%&=:;,_<>-"))[_val = phx::bind(CreateLitRegexp, _1)] |
              char_('.')[_val = CreateDotRegexp()];
+    number = int_;
   }
 };
 
@@ -161,6 +180,11 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
     case CLASS:
       std::cout << "CLASS " << rp->c << std::endl;
       break;
+    case CURLY:
+      std::cout << "CURLY " << rp->low_times << " " << rp->high_times
+                << std::endl;
+      PrintRegexpImpl(tab + 1, rp->left);
+      break;
     case DOT:
       std::cout << "DOT" << std::endl;
       break;
@@ -181,7 +205,7 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
       PrintRegexpImpl(tab + 1, rp->left);
       break;
     case SQUARE:
-      std::cout << "SQUARE " << rp->low << " " << rp->high << std::endl;
+      std::cout << "SQUARE " << rp->low_ch << " " << rp->high_ch << std::endl;
       break;
     default:
       throw std::runtime_error("Unexpected regexp type.");
@@ -206,7 +230,9 @@ bool IsValidRegexp(RegexpPtr rp) noexcept {
       case STAR:
         return IsValidRegexp(rp->left);
       case SQUARE:
-        return rp->low <= rp->high;
+        return rp->low_ch <= rp->high_ch;
+      case CURLY:
+        return rp->low_times <= rp->high_times;
       default:
         std::cerr << "Unexpected regexp type." << std::endl;
         return false;

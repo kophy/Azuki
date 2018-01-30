@@ -13,6 +13,7 @@ struct MatchStatus {
   unsigned int begin_idx;
   unsigned int end_idx;
   vector<StringPtr> saved;  // saved capturing groups
+  vector<int> repeated;     // counters of repeat times of subexpressions
 
   MatchStatus() : success(false) {}
 };

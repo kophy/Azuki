@@ -1,3 +1,4 @@
+#include <climits>
 #include "gtest/gtest.h"
 #include "regexp.h"
 
@@ -14,6 +15,10 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
              IsEqualRegexp(rp1->right, rp2->right);
     case CLASS:
       return rp1->c == rp2->c;
+    case CURLY:
+      return rp1->low_times == rp2->low_times &&
+             rp1->high_times == rp2->high_times &&
+             IsEqualRegexp(rp1->left, rp2->left);
     case DOT:
       return true;
     case PAREN:
@@ -24,7 +29,7 @@ bool IsEqualRegexp(RegexpPtr rp1, RegexpPtr rp2) {
     case LIT:
       return rp1->c == rp2->c;
     case SQUARE:
-      return rp1->low == rp2->low && rp1->high == rp2->high;
+      return rp1->low_ch == rp2->low_ch && rp1->high_ch == rp2->high_ch;
     default:
       return false;
   }
@@ -126,6 +131,33 @@ TEST(RegexTest, SimpleEscape2) {
 TEST(RegexTest, SimpleSquare) {
   RegexpPtr r1 = ParseRegexp("[a-c]+");
   RegexpPtr r2 = CreatePlusRegexp(CreateSquareRegexp('a', 'c'));
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, SimpleCurly1) {
+  RegexpPtr r1 = ParseRegexp("a{3}");
+  RegexpPtr r2 = CreateCurlyRegexp(CreateLitRegexp('a'), 3, 3);
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, SimpleCurly2) {
+  RegexpPtr r1 = ParseRegexp("a{3,5}");
+  RegexpPtr r2 = CreateCurlyRegexp(CreateLitRegexp('a'), 3, 5);
+  EXPECT_TRUE(IsEqualRegexp(r1, r2));
+#ifdef DEBUG
+  PrintRegexp(r1);
+#endif
+}
+
+TEST(RegexTest, SimpleCurly3) {
+  RegexpPtr r1 = ParseRegexp("a{3,}");
+  RegexpPtr r2 = CreateCurlyRegexp(CreateLitRegexp('a'), 3, INT_MAX);
   EXPECT_TRUE(IsEqualRegexp(r1, r2));
 #ifdef DEBUG
   PrintRegexp(r1);
