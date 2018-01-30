@@ -1,4 +1,7 @@
 # Azuki
+
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyperium/hyper/master/LICENSE)
+
 Azuki is a simple regular expression engine implemented with virtual machine approach.  
 Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。  
 
@@ -24,6 +27,7 @@ The name `Azuki` is Japanese アズキ(read bean).
 | \d | match digit | \d+ | "123"  | " ", "ab" |
 | \s | match whitespace | \s+ | " ", "\t" | "ab", "123" |
 | [-] | match character in range | [a-c] | "a", "c" | "d", "1" |
+| {,} | match item repeating allowed times | a{2,3} | "aa", "aaa" | "a", "ba" |
 
 ## Example
 Suppose we want to match the Internet word for "laugh", 233(also 2333, 23333, ...), the regular expression can be "(233+)".
@@ -72,7 +76,7 @@ More examples can be found in `example` directory.
 - [X] shorthand character classes(\\d, \\w, \\s)
 - [X] escape special characters('^', '$', '(', ')', etc)
 - [X] character and numerical ranges([a-c], [1-2])
-- [ ] curly bracket quantification ({2, 5})
+- [X] curly bracket quantification ({2, 5})
 - [ ] regex replace
 
 ## Reference
