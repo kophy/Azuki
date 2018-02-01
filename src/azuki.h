@@ -6,10 +6,6 @@
 
 namespace Azuki {
 
-// Positonal anchors for the begin and end of string.
-const char CARET = '^';
-const char DOLLAR = '$';
-
 // Create machine from raw regular expression.
 Machine CreateMachine(const string &e);
 
@@ -29,4 +25,4 @@ string RegexReplace(const Machine &m, const string &s, const string &new_subs,
 
 };  // namespace Azuki
 
-#endif
+#endif  // __AZUKI_AZUKI__

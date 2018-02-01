@@ -7,8 +7,7 @@ namespace Azuki {
 namespace {
 
 // The Context struct holds variables when compile the program recursively.
-// It should be used only in this cpp file by CompileRegexp and Emit, so here an
-// anonymous namespace is used.
+// It should be used only in this cpp file by CompileRegexp and Emit.
 struct Context {
   int pc;
   unsigned int slot;
@@ -24,6 +23,11 @@ int CalculateInstruction(RegexpPtr rp);
 
 // Emit instructions compiled from regexp to program with starting index pc.
 void Emit(Program &program, Context &context, RegexpPtr rp);
+
+bool Instruction::ConsumeCharacter() {
+  return opcode == ANY || opcode == ANY_WORD || opcode == ANY_DIGIT ||
+         opcode == ANY_SPACE || opcode == CHAR || opcode == RANGE;
+}
 
 std::string Instruction::str() {
   std::stringstream ss;
@@ -103,14 +107,14 @@ InstrPtr CreateSaveInstruction(unsigned int slot) {
   return rp;
 }
 
-InstrPtr CreateSplitInstruction(int dst, bool greedy) {
+InstrPtr CreateSplitInstruction(unsigned int dst, bool greedy) {
   InstrPtr instr(new Instruction(SPLIT));
   instr->dst = dst;
   instr->greedy = greedy;
   return instr;
 }
 
-InstrPtr CreateJmpInstruction(int dst) {
+InstrPtr CreateJmpInstruction(unsigned int dst) {
   InstrPtr instr(new Instruction(JMP));
   instr->dst = dst;
   return instr;
@@ -181,7 +185,6 @@ int CalculateInstructionImpl(RegexpPtr rp) {
   }
 }
 
-// Emit instructions compiled from regexp to program with starting index pc.
 void Emit(Program &program, Context &context, RegexpPtr rp) {
   int &pc = context.pc;
   unsigned int &slot = context.slot;
@@ -255,7 +258,8 @@ Program CompileRegexp(RegexpPtr rp) {
   Emit(program, context, rp);
   program.back() = CreateMatchInstruction();
 
-  for (int idx = 0; idx < program.size(); ++idx) program[idx]->idx = idx;
+  for (unsigned int idx = 0; idx < program.size(); ++idx)
+    program[idx]->idx = idx;
   return program;
 }
 

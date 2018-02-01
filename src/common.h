@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -11,6 +12,7 @@ namespace Azuki {
 using std::pair;
 using std::shared_ptr;
 using std::string;
+using std::string_view;
 using std::vector;
 
 typedef string::const_iterator StringPtr;

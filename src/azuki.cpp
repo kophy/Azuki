@@ -8,9 +8,9 @@
 namespace Azuki {
 
 Machine CreateMachine(const string &e) {
-  bool match_begin = StartsWith(e, CARET);
+  bool match_begin = StartsWith(e, '^');
   bool match_end =
-      EndsWith(e, DOLLAR) && !EndsWith(e, "\\" + string(1, DOLLAR));
+      EndsWith(e, '$') && !EndsWith(e, "\\$");
 
   // Remove positional anchors if they exist.
   int begin = match_begin ? 1 : 0;
@@ -66,8 +66,7 @@ string RegexReplace(const Machine &m, const string &s, const string &new_subs,
                     bool global) {
   vector<pair<int, int>> replaced;
   auto ms = m.Run(s);
-  if (ms.success)
-    replaced.push_back(std::make_pair(ms.begin_idx, ms.end_idx));
+  if (ms.success) replaced.push_back(std::make_pair(ms.begin_idx, ms.end_idx));
   if (global) {
     while (RegexSearch(m, s, ms)) {
       replaced.push_back(std::make_pair(ms.begin_idx, ms.end_idx));

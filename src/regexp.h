@@ -1,10 +1,11 @@
-#ifndef __AZUKI_REGEX_NODE__
-#define __AZUKI_REGEX_NODE__
+#ifndef __AZUKI_REGEXP__
+#define __AZUKI_REGEXP__
 
 #include "common.h"
 
 namespace Azuki {
 
+// Regexp types.
 enum RegexpType {
   ALT,
   CAT,
@@ -21,18 +22,21 @@ enum RegexpType {
 
 // A Regexp struct is like a binary tree node in the tree structure built from
 // raw regular expression.
-// A Regexp struct must contain a valid type field, while whether other fields
-// are valid depends on the Regexp type.
+// Don't use default constructor as it may lead to uninitialized fields. Use
+// convenience functions(CreateAltRegexp, etc) below or ParseRegexp instead.
+// Example:
+//   RegexpPtr rp1 = CreateLitRegexp('a');
+//   RegexpPtr rp2 = ParseRegexp("a+b");
 struct Regexp {
   // Required field(s).
   RegexpType type;
 
-  // Optional fields.
+  // Optional fields (depend on Regexp type).
   char c;
   shared_ptr<Regexp> left;
   shared_ptr<Regexp> right;
-  char low_ch, high_ch;       // (SQUARE)
-  int low_times, high_times;  // (CURLY)
+  char low_ch, high_ch;       // Lower and upper bounds of character. (SQUARE)
+  int low_times, high_times;  // Lower and upper bounds of character. (CURLY)
 };
 
 typedef shared_ptr<Regexp> RegexpPtr;
@@ -64,4 +68,4 @@ bool IsValidRegexp(RegexpPtr rp) noexcept;
 
 };  // namespace Azuki
 
-#endif  // __AZUKI_REGEX_NODE__
+#endif  // __AZUKI_REGEXP__

@@ -11,10 +11,6 @@ namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 namespace qi = boost::spirit::qi;
 
-// A wrapper to handle arbitrary escaped character.
-// Either CreateClassRegexp or CreateLitRegexp is called to create the Regexp.
-RegexpPtr CreateRegexpWithEscaped(char c);
-
 RegexpPtr CreateAltRegexp(RegexpPtr left, RegexpPtr right) {
   RegexpPtr rp(new Regexp());
   rp->type = ALT;
@@ -96,11 +92,17 @@ RegexpPtr CreateCurlyRegexp(RegexpPtr left, int low_times, int high_times) {
   return rp;
 }
 
+// This is a wrapper to handle arbitrary escaped character.
+// Either CreateClassRegexp or CreateLitRegexp is called to create the Regexp.
+// Example:
+//    RegexpPtr rp1 = CreateRegexpWithEscaped('w'); // Regexp(CLASS, w)
+//    RegexpPtr rp2 = CreateRegexpWithEscaped('?'); // Regexp(LIT, '?')
+//    RegexpPtr rp3 = CreateRegexpWithEscaped('#'); // error
 RegexpPtr CreateRegexpWithEscaped(char c) {
   // \w for wrod, \d for digit, \s for space
-  static std::string class_char = "dsw";
+  static const std::string class_char = "dsw";
   // only character used as operators can be escaped
-  static std::string special_char = ".+?*|\\()[]{}";
+  static const std::string special_char = ".+?*|\\()[]{}";
 
   if (class_char.find(c) != std::string::npos)
     return CreateClassRegexp(c);
@@ -242,6 +244,9 @@ bool IsValidRegexp(RegexpPtr rp) noexcept {
 }
 
 bool operator==(RegexpPtr rp1, RegexpPtr rp2) {
+  if (!rp1.get() && !rp2.get()) return true;
+  if (!rp1.get() ^ !rp2.get()) return false;
+
   if (rp1->type != rp2->type) return false;
   switch (rp1->type) {
     case ALT:

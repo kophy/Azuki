@@ -4,15 +4,6 @@
 
 namespace Azuki {
 
-namespace {
-
-bool ConsumeCharacter(Opcode opcode) {
-  return opcode == ANY || opcode == ANY_WORD || opcode == ANY_DIGIT ||
-         opcode == ANY_SPACE || opcode == CHAR || opcode == RANGE;
-}
-
-};  // namespace
-
 Thread::Thread(const Machine &machine, int pc, unsigned int begin_idx)
     : machine(machine), pc(pc) {
   status.begin_idx = begin_idx;
@@ -29,7 +20,7 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   InstrPtr instr = machine.FetchInstruction(pc++);
   Opcode opcode = instr->opcode;
 
-  if (ConsumeCharacter(opcode)) ++status.end_idx;
+  if (instr->ConsumeCharacter()) ++status.end_idx;
 
   if (opcode == ANY) {
     return true;
@@ -107,7 +98,7 @@ MatchStatus Machine::Run(const string &s, bool capture) const {
 
     std::queue<ThreadPtr> next;  // keep threads to run in next round
     while (!ready.empty()) {
-      ThreadPtr tp = ready.front();
+      auto tp = ready.front();
       ready.pop();
 
       // If the thread successfully consumes the character, we need to save it
@@ -124,7 +115,6 @@ MatchStatus Machine::Run(const string &s, bool capture) const {
   return status;
 }
 
-// TODO: this part should be tested
 void Machine::UpdateStatus(const MatchStatus &status_) const {
   if (!status.success) {
     status = status_;

@@ -40,6 +40,7 @@ struct Instruction {
   int value;                  // value to set counter (SET)
 
   Instruction(Opcode opcode) : opcode(opcode) {}
+  bool ConsumeCharacter();
   string str();
 };
 
@@ -59,10 +60,13 @@ InstrPtr CreateMatchInstruction();
 InstrPtr CreateRangeInstruction(char low_ch, char high_ch);
 InstrPtr CreateSaveInstruction(unsigned int slot);
 InstrPtr CreateSetInstruction(unsigned int counter, int value);
-InstrPtr CreateSplitInstruction(int dst, bool greedy = false);
-InstrPtr CreateJmpInstruction(int dst);
+InstrPtr CreateSplitInstruction(unsigned int dst, bool greedy = false);
+InstrPtr CreateJmpInstruction(unsigned int dst);
 
 // Compile into program the regular expression represented with Regexp.
+// Example:
+//    RegexpPtr rp = ParseRegexp("a+b");
+//    Program program = CompileRegexp(rp);
 Program CompileRegexp(RegexpPtr rp);
 
 // Print the program (for debug use).
