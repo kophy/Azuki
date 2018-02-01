@@ -77,7 +77,7 @@ More examples can be found in `example` directory.
 - [X] escape special characters('^', '$', '(', ')', etc)
 - [X] character and numerical ranges([a-c], [1-2])
 - [X] curly bracket quantification ({2, 5})
-- [ ] regex replace
+- [X] regex replace
 
 ## Reference
 - [Regular Expression Matching: the Virtual Machine Approach](https://swtch.com/~rsc/regexp/regexp2.html)

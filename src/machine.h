@@ -15,7 +15,7 @@ struct MatchStatus {
   vector<StringPtr> saved;  // saved capturing groups
   vector<int> repeated;     // counters of repeat times of subexpressions
 
-  MatchStatus() : success(false) {}
+  MatchStatus() : success(false), begin_idx(0), end_idx(0) {}
 };
 
 class Machine;  // forward declaration
