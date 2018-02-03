@@ -10,10 +10,10 @@ namespace {
 // It should be used only in this cpp file by CompileRegexp and Emit.
 struct Context {
   int pc;
-  unsigned int slot;
-  unsigned int counter;
-  Context(int pc, int slot, int counter)
-      : pc(pc), slot(slot), counter(counter) {}
+  unsigned int save_idx;
+  unsigned int rpctr_idx;
+  Context(int pc, int save_idx, int rpctr_idx)
+      : pc(pc), save_idx(save_idx), rpctr_idx(rpctr_idx) {}
 };
 
 };  // namespace
@@ -49,11 +49,11 @@ std::string Instruction::str() {
       ss << "CHAR '" << c << "'";
       break;
     case CHECK:
-      ss << "CHECK COUNTER[" << counter << "] " << low_times << " "
+      ss << "CHECK rpctr_idx[" << rpctr_idx << "] " << low_times << " "
          << high_times;
       break;
     case INCR:
-      ss << "INCR COUNTER[" << counter << "]";
+      ss << "INCR rpctr_idx[" << rpctr_idx << "]";
       break;
     case JMP:
       ss << "JMP I" << dst;
@@ -62,10 +62,10 @@ std::string Instruction::str() {
       ss << "MATCH";
       break;
     case SAVE:
-      ss << "SAVE " << slot;
+      ss << "SAVE " << save_idx;
       break;
     case SET:
-      ss << "SET COUNTER[" << counter << "]";
+      ss << "SET rpctr_idx[" << rpctr_idx << "]";
       break;
     case SPLIT:
       ss << "SPLIT I" << idx + 1 << " I" << dst;
@@ -101,9 +101,9 @@ InstrPtr CreateCharInstruction(char c) {
 
 InstrPtr CreateMatchInstruction() { return InstrPtr(new Instruction(MATCH)); }
 
-InstrPtr CreateSaveInstruction(unsigned int slot) {
+InstrPtr CreateSaveInstruction(unsigned int save_idx) {
   InstrPtr rp(new Instruction(SAVE));
-  rp->slot = slot;
+  rp->save_idx = save_idx;
   return rp;
 }
 
@@ -127,24 +127,24 @@ InstrPtr CreateRangeInstruction(char low_ch, char high_ch) {
   return instr;
 }
 
-InstrPtr CreateCheckInstruction(unsigned int counter, int low_times,
+InstrPtr CreateCheckInstruction(unsigned int rpctr_idx, int low_times,
                                 int high_times) {
   InstrPtr instr(new Instruction(CHECK));
-  instr->counter = counter;
+  instr->rpctr_idx = rpctr_idx;
   instr->low_times = low_times;
   instr->high_times = high_times;
   return instr;
 }
 
-InstrPtr CreateIncrInstruction(unsigned int counter) {
+InstrPtr CreateIncrInstruction(unsigned int rpctr_idx) {
   InstrPtr instr(new Instruction(INCR));
-  instr->counter = counter;
+  instr->rpctr_idx = rpctr_idx;
   return instr;
 }
 
-InstrPtr CreateSetInstruction(unsigned int counter, int value) {
+InstrPtr CreateSetInstruction(unsigned int rpctr_idx, int value) {
   InstrPtr instr(new Instruction(SET));
-  instr->counter = counter;
+  instr->rpctr_idx = rpctr_idx;
   instr->value = value;
   return instr;
 }
@@ -187,8 +187,8 @@ int CalculateInstructionImpl(RegexpPtr rp) {
 
 void Emit(Program &program, Context &context, RegexpPtr rp) {
   int &pc = context.pc;
-  unsigned int &slot = context.slot;
-  unsigned int &counter = context.counter;
+  unsigned int &save_idx = context.save_idx;
+  unsigned int &rpctr_idx = context.rpctr_idx;
 
   if (rp->type == ALT) {
     int split_pc = pc++;
@@ -209,27 +209,27 @@ void Emit(Program &program, Context &context, RegexpPtr rp) {
       program[pc++] = CreateAnySpaceInstruction();
   } else if (rp->type == CURLY) {
     int set_pc = pc++;
-    int old_counter = counter++;
-    program[set_pc] = CreateSetInstruction(old_counter, 0);
+    int old_rpctr_idx = rpctr_idx++;
+    program[set_pc] = CreateSetInstruction(old_rpctr_idx, 0);
     Emit(program, context, rp->left);
-    program[pc++] = CreateIncrInstruction(old_counter);
+    program[pc++] = CreateIncrInstruction(old_rpctr_idx);
     int split_pc = pc++;
     int jmp_pc = pc++;
     int check_pc = pc++;
     program[split_pc] = CreateSplitInstruction(check_pc, false);
     program[jmp_pc] = CreateJmpInstruction(set_pc + 1);
     program[check_pc] =
-        CreateCheckInstruction(old_counter, rp->low_times, rp->high_times);
+        CreateCheckInstruction(old_rpctr_idx, rp->low_times, rp->high_times);
   } else if (rp->type == DOT) {
     program[pc++] = CreateAnyInstruction();
   } else if (rp->type == LIT) {
     program[pc++] = CreateCharInstruction(rp->c);
   } else if (rp->type == PAREN) {
-    int old_slot = slot;
-    slot += 2;
-    program[pc++] = CreateSaveInstruction(old_slot);
+    int old_save_idx = save_idx;
+    save_idx += 2;
+    program[pc++] = CreateSaveInstruction(old_save_idx);
     Emit(program, context, rp->left);
-    program[pc++] = CreateSaveInstruction(old_slot + 1);
+    program[pc++] = CreateSaveInstruction(old_save_idx + 1);
   } else if (rp->type == PLUS) {
     int current_pc = pc;
     Emit(program, context, rp->left);

@@ -23,21 +23,22 @@ enum Opcode {
   JMP
 };
 
-// The instruction struct encodes information to run an instruction.
+// An instruction struct encodes information for thread to run the instruction.
 struct Instruction {
   // Required fields.
   unsigned int idx;  // instruction index
   Opcode opcode;     // instruction opcode
 
-  // Optional fields.
-  char c;                // character to match (CHAR)
-  unsigned int dst;      // destination instruction index (SPLIT and JMP)
-  bool greedy;           // if true, try dst before (idx + 1) (SPLIT)
-  unsigned int slot;     // index of slot to save string pointer (SAVE)
-  char low_ch, high_ch;  // character lower and upper bound (RANGE)
-  unsigned int counter;  // index of counter for repeat times (CHECK, INCR, SET)
+  // Optional fields (depend on Opcode opcode).
+  char c;                 // character to match (CHAR)
+  unsigned int dst;       // destination instruction index (SPLIT and JMP)
+  bool greedy;            // if true, try dst before (idx + 1) (SPLIT)
+  unsigned int save_idx;  // index to save current string pointer (SAVE)
+  char low_ch, high_ch;   // character lower and upper bound (RANGE)
+  unsigned int
+      rpctr_idx;  // index of counter of repeat times (CHECK, INCR, SET)
   int low_times, high_times;  // repeat times lower and upper bound (CHECK)
-  int value;                  // value to set counter (SET)
+  int value;                  // value to set rpctr_idx (SET)
 
   Instruction(Opcode opcode) : opcode(opcode) {}
   bool ConsumeCharacter();
@@ -53,13 +54,13 @@ InstrPtr CreateAnyWordInstruction();
 InstrPtr CreateAnyDigitInstruction();
 InstrPtr CreateAnySpaceInstruction();
 InstrPtr CreateCharInstruction(char c);
-InstrPtr CreateCheckInstruction(unsigned int counter, int low_times,
+InstrPtr CreateCheckInstruction(unsigned int rpctr_idx, int low_times,
                                 int high_times);
-InstrPtr CreateIncrInstruction(unsigned int counter);
+InstrPtr CreateIncrInstruction(unsigned int rpctr_idx);
 InstrPtr CreateMatchInstruction();
 InstrPtr CreateRangeInstruction(char low_ch, char high_ch);
-InstrPtr CreateSaveInstruction(unsigned int slot);
-InstrPtr CreateSetInstruction(unsigned int counter, int value);
+InstrPtr CreateSaveInstruction(unsigned int save_idx);
+InstrPtr CreateSetInstruction(unsigned int rpctr_idx, int value);
 InstrPtr CreateSplitInstruction(unsigned int dst, bool greedy = false);
 InstrPtr CreateJmpInstruction(unsigned int dst);
 

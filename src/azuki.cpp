@@ -9,8 +9,7 @@ namespace Azuki {
 
 Machine CreateMachine(const string &e) {
   bool match_begin = StartsWith(e, '^');
-  bool match_end =
-      EndsWith(e, '$') && !EndsWith(e, "\\$");
+  bool match_end = EndsWith(e, '$') && !EndsWith(e, "\\$");
 
   // Remove positional anchors if they exist.
   int begin = match_begin ? 1 : 0;
@@ -27,49 +26,29 @@ Machine CreateMachine(const string &e) {
 }
 
 bool RegexSearch(const Machine &m, const string &s) {
-  auto ms = m.Run(s);
-  return ms.success;
-}
-
-bool RegexSearch(const Machine &m, const string &s, vector<string> &v) {
-  auto ms = m.Run(s);
-  if (!ms.success) return false;
-  for (unsigned int i = 0; i < ms.saved.size(); i += 2)
-    v.push_back(string(ms.saved[i], ms.saved[i + 1]));
-  return ms.success;
-}
-
-bool RegexSearch(const Machine &m, const string &s, MatchStatus &ms) {
-  unsigned int offset = ms.end_idx;
-  auto temp = m.Run(s.substr(offset));
-  if (!temp.success) return false;
-  temp.begin_idx += offset;
-  temp.end_idx += offset;
-  ms = temp;
+  auto ms = m.Run(s, false);
   return ms.success;
 }
 
 bool RegexSearch(const Machine &m, const string &s, MatchStatus &ms,
-                 vector<string> &v) {
-  unsigned int offset = ms.end_idx;
-  auto temp = m.Run(s.substr(offset));
+                 bool capture) {
+  unsigned int offset = ms.end;
+  auto temp = m.Run(s.substr(offset), capture);
   if (!temp.success) return false;
-  temp.begin_idx += offset;
-  temp.end_idx += offset;
+  temp.begin += offset;
+  temp.end += offset;
   ms = temp;
-  for (unsigned int i = 0; i < ms.saved.size(); i += 2)
-    v.push_back(string(ms.saved[i], ms.saved[i + 1]));
-  return true;
+  return ms.success;
 }
 
 string RegexReplace(const Machine &m, const string &s, const string &new_subs,
                     bool global) {
   vector<pair<int, int>> replaced;
   auto ms = m.Run(s);
-  if (ms.success) replaced.push_back(std::make_pair(ms.begin_idx, ms.end_idx));
+  if (ms.success) replaced.push_back(std::make_pair(ms.begin, ms.end));
   if (global) {
     while (RegexSearch(m, s, ms)) {
-      replaced.push_back(std::make_pair(ms.begin_idx, ms.end_idx));
+      replaced.push_back(std::make_pair(ms.begin, ms.end));
     }
   }
   std::stringstream ss;

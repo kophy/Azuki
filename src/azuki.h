@@ -14,10 +14,8 @@ Machine CreateMachine(const string &e);
 // If MatchStatus ms is provided, search will begin from ms.end_idx.
 // If vector<string> v is provided, captured groups will be saved in v.
 bool RegexSearch(const Machine &m, const string &s);
-bool RegexSearch(const Machine &m, const string &s, vector<string> &v);
-bool RegexSearch(const Machine &m, const string &s, MatchStatus &ms);
 bool RegexSearch(const Machine &m, const string &s, MatchStatus &ms,
-                 vector<string> &v);
+                 bool capture = true);
 
 // Replace matched substring in s with new_subs.
 string RegexReplace(const Machine &m, const string &s, const string &new_subs,

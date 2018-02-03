@@ -1,4 +1,8 @@
 .DS_Store
+.vscode
+
+# Not ready
+python
 
 # CMake
 build/

@@ -10,12 +10,10 @@ namespace Azuki {
 // The MatchStatus struct holds results of regexp match.
 struct MatchStatus {
   bool success;
-  unsigned int begin_idx;
-  unsigned int end_idx;
-  vector<StringPtr> saved;  // saved capture groups
-  vector<int> repeated;     // counters of repeat times of subexpressions
+  unsigned int begin, end;
+  vector<string> captured;
 
-  MatchStatus() : success(false), begin_idx(0), end_idx(0) {}
+  MatchStatus();
 };
 
 class Machine;  // forward declaration
@@ -24,16 +22,23 @@ class Machine;  // forward declaration
 // Each thread keeps its own program counter and match status.
 class Thread : public std::enable_shared_from_this<Thread> {
  public:
-  Thread(const Machine &machine, int pc, unsigned int begin_idx);
+  struct Status {
+    unsigned int begin, end;
+    vector<StringPtr> saved;
+    vector<int> repeated;
+  };
+
+ public:
+  Thread(const Machine &machine, int pc, unsigned int begin);
 
   // Create a new thread with exact same state as this thread but a different
   // program counter.
   // Example:
   //    ThreadPtr tp1(new Thread(machine, 0, 0));
-  //    Thread t2 tp2 = tp1->Split(2);
+  //    ThreadPtr tp2 = ThreadPtr(tp1->Split(2));
   // Then we have tp1->machine == tp2->machine, tp1->status == tp2->status,
   // but tp1->pc != tp2->pc.
-  shared_ptr<Thread> Split(int other_pc);
+  Thread *Split(int other_pc);
 
   // Return true if the thread runs one instruction and successfully
   // consumes the input character referenced by sp. The thread should be run
@@ -46,8 +51,8 @@ class Thread : public std::enable_shared_from_this<Thread> {
 
  private:
   const Machine &machine;  // host machine
-  int pc;                  // program counter
-  MatchStatus status;      // this thread's match status
+  unsigned int pc;         // program counter
+  Thread::Status tstatus;  // this thread's match status
 };
 
 typedef shared_ptr<Thread> ThreadPtr;
@@ -77,7 +82,7 @@ class Machine {
   void AddReadyThread(ThreadPtr tp) const { ready.push(tp); }
 
   // Update match status.
-  void UpdateStatus(const MatchStatus &status_) const;
+  void UpdateStatus(const Thread::Status &tstatus) const;
 
   // Fetch instruction by program counter(index).
   const InstrPtr FetchInstruction(int pc) const { return program[pc]; }

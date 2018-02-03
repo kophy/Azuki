@@ -4,14 +4,30 @@
 
 namespace Azuki {
 
-Thread::Thread(const Machine &machine, int pc, unsigned int begin_idx)
-    : machine(machine), pc(pc) {
-  status.begin_idx = begin_idx;
-  status.end_idx = begin_idx;
+namespace {
+
+void PopulateMatchStatus(const Thread::Status &ts, MatchStatus &ms) {
+  ms.success = true;
+  ms.begin = ts.begin;
+  ms.end = ts.end;
+  vector<string> temp;;
+  for (unsigned i = 0; i < ts.saved.size(); i += 2)
+    temp.push_back(string(ts.saved[i], ts.saved[i + 1]));
+  ms.captured = std::move(temp);
 }
 
-ThreadPtr Thread::Split(int other_pc) {
-  ThreadPtr tp(new Thread(*this));
+};  // namespace
+
+MatchStatus::MatchStatus() : success(false), begin(0), end(0) {}
+
+Thread::Thread(const Machine &machine, int pc, unsigned int begin)
+    : machine(machine), pc(pc) {
+  tstatus.begin = begin;
+  tstatus.end = begin;
+}
+
+Thread *Thread::Split(int other_pc) {
+  Thread *tp = new Thread(*this);
   tp->pc = other_pc;
   return tp;
 }
@@ -20,7 +36,7 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   InstrPtr instr = machine.FetchInstruction(pc++);
   Opcode opcode = instr->opcode;
 
-  if (instr->ConsumeCharacter()) ++status.end_idx;
+  if (instr->ConsumeCharacter()) ++tstatus.end;
 
   if (opcode == ANY) {
     return true;
@@ -33,38 +49,38 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   } else if (opcode == CHAR) {
     return (instr->c == *sp);
   } else if (opcode == CHECK) {
-    if (status.repeated[instr->counter] >= instr->low_times &&
-        status.repeated[instr->counter] <= instr->high_times)
+    if (tstatus.repeated[instr->rpctr_idx] >= instr->low_times &&
+        tstatus.repeated[instr->rpctr_idx] <= instr->high_times)
       machine.AddReadyThread(shared_from_this());
   } else if (opcode == INCR) {
-    ++status.repeated[instr->counter];
+    ++tstatus.repeated[instr->rpctr_idx];
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == JMP) {
-    machine.AddReadyThread(this->Split(instr->dst));
+    this->pc = instr->dst;
+    machine.AddReadyThread(shared_from_this());
   } else if (opcode == MATCH) {
-    status.success = true;
-    machine.UpdateStatus(status);
+    machine.UpdateStatus(tstatus);
   } else if (opcode == RANGE) {
     return (*sp) >= instr->low_ch && (*sp) <= instr->high_ch;
   } else if (opcode == SAVE) {
     if (capture) {
-      if (status.saved.size() <= instr->slot)
-        status.saved.resize(instr->slot + 1);
-      status.saved[instr->slot] = sp;
+      if (tstatus.saved.size() <= instr->save_idx)
+        tstatus.saved.resize(instr->save_idx + 1);
+      tstatus.saved[instr->save_idx] = sp;
     }
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == SET) {
-    if (status.repeated.size() <= instr->counter)
-      status.repeated.resize(instr->counter + 1);
-    status.repeated[instr->counter] = instr->value;
+    if (tstatus.repeated.size() <= instr->rpctr_idx)
+      tstatus.repeated.resize(instr->rpctr_idx + 1);
+    tstatus.repeated[instr->rpctr_idx] = instr->value;
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == SPLIT) {
     if (instr->greedy) {
-      machine.AddReadyThread(this->Split(instr->dst));
+      machine.AddReadyThread(ThreadPtr(this->Split(instr->dst)));
       machine.AddReadyThread(shared_from_this());
     } else {
       machine.AddReadyThread(shared_from_this());
-      machine.AddReadyThread(this->Split(instr->dst));
+      machine.AddReadyThread(ThreadPtr(this->Split(instr->dst)));
     }
   } else {
     throw std::runtime_error("Unexpected instruction opcode.");
@@ -115,17 +131,17 @@ MatchStatus Machine::Run(const string &s, bool capture) const {
   return status;
 }
 
-void Machine::UpdateStatus(const MatchStatus &status_) const {
+void Machine::UpdateStatus(const Thread::Status &ts) const {
   if (!status.success) {
-    status = status_;
+    PopulateMatchStatus(ts, status);
   } else {
-    if (status.begin_idx < status_.begin_idx) {
+    if (status.begin < ts.begin) {
       return;
-    } else if (status.begin_idx > status_.begin_idx) {
-      status = status_;
+    } else if (status.begin > ts.begin) {
+      PopulateMatchStatus(ts, status);
       return;
     } else {
-      if (status.end_idx < status_.end_idx) status = status_;
+      if (status.end < ts.end) PopulateMatchStatus(ts, status);
     }
   }
 }
