@@ -6,24 +6,25 @@ namespace Azuki {
 
 namespace {
 
-void PopulateMatchStatus(const Thread::Status &ts, MatchStatus &ms) {
+void PopulateMatchResult(const Thread::Status &ts, MatchResult &ms) {
   ms.success = true;
   ms.begin = ts.begin;
   ms.end = ts.end;
-  vector<string> temp;;
+  vector<string> temp;
+  ;
   for (unsigned i = 0; i < ts.saved.size(); i += 2)
     temp.push_back(string(ts.saved[i], ts.saved[i + 1]));
-  ms.captured = std::move(temp);
+  ms.capture = std::move(temp);
 }
 
 };  // namespace
 
-MatchStatus::MatchStatus() : success(false), begin(0), end(0) {}
+MatchResult::MatchResult() : success(false), begin(0), end(0) {}
 
 Thread::Thread(const Machine &machine, int pc, unsigned int begin)
     : machine(machine), pc(pc) {
-  tstatus.begin = begin;
-  tstatus.end = begin;
+  status.begin = begin;
+  status.end = begin;
 }
 
 Thread *Thread::Split(int other_pc) {
@@ -32,11 +33,11 @@ Thread *Thread::Split(int other_pc) {
   return tp;
 }
 
-bool Thread::RunOneStep(StringPtr sp, bool capture) {
+bool Thread::RunOneStep(StringPtr sp, bool save_capture) {
   InstrPtr instr = machine.FetchInstruction(pc++);
   Opcode opcode = instr->opcode;
 
-  if (instr->ConsumeCharacter()) ++tstatus.end;
+  if (instr->ConsumeCharacter()) ++status.end;
 
   if (opcode == ANY) {
     return true;
@@ -49,30 +50,30 @@ bool Thread::RunOneStep(StringPtr sp, bool capture) {
   } else if (opcode == CHAR) {
     return (instr->c == *sp);
   } else if (opcode == CHECK) {
-    if (tstatus.repeated[instr->rpctr_idx] >= instr->low_times &&
-        tstatus.repeated[instr->rpctr_idx] <= instr->high_times)
+    if (status.repeated[instr->rpctr_idx] >= instr->low_times &&
+        status.repeated[instr->rpctr_idx] <= instr->high_times)
       machine.AddReadyThread(shared_from_this());
   } else if (opcode == INCR) {
-    ++tstatus.repeated[instr->rpctr_idx];
+    ++status.repeated[instr->rpctr_idx];
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == JMP) {
     this->pc = instr->dst;
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == MATCH) {
-    machine.UpdateStatus(tstatus);
+    machine.UpdateResult(status);
   } else if (opcode == RANGE) {
     return (*sp) >= instr->low_ch && (*sp) <= instr->high_ch;
   } else if (opcode == SAVE) {
-    if (capture) {
-      if (tstatus.saved.size() <= instr->save_idx)
-        tstatus.saved.resize(instr->save_idx + 1);
-      tstatus.saved[instr->save_idx] = sp;
+    if (save_capture) {
+      if (status.saved.size() <= instr->save_idx)
+        status.saved.resize(instr->save_idx + 1);
+      status.saved[instr->save_idx] = sp;
     }
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == SET) {
-    if (tstatus.repeated.size() <= instr->rpctr_idx)
-      tstatus.repeated.resize(instr->rpctr_idx + 1);
-    tstatus.repeated[instr->rpctr_idx] = instr->value;
+    if (status.repeated.size() <= instr->rpctr_idx)
+      status.repeated.resize(instr->rpctr_idx + 1);
+    status.repeated[instr->rpctr_idx] = instr->value;
     machine.AddReadyThread(shared_from_this());
   } else if (opcode == SPLIT) {
     if (instr->greedy) {
@@ -101,9 +102,9 @@ Machine &Machine::SetMatchEnd(bool b) {
   return *this;
 }
 
-MatchStatus Machine::Run(const string &s, bool capture) const {
+MatchResult Machine::Run(const string &s, bool save_capture) const {
   ready = std::queue<ThreadPtr>();
-  status.success = false;
+  result.success = false;
 
   if (match_begin) ready.push(ThreadPtr(new Thread(*this, 0, 0)));
 
@@ -119,29 +120,29 @@ MatchStatus Machine::Run(const string &s, bool capture) const {
 
       // If the thread successfully consumes the character, we need to save it
       // for next round.
-      if (tp->RunOneStep(sp, capture)) next.push(tp);
-      if (status.success) {
+      if (tp->RunOneStep(sp, save_capture)) next.push(tp);
+      if (result.success) {
         if (match_end && idx != s.size()) {
-          status.success = false;
+          result.success = false;
         }
       }
     }
     ready = std::move(next);
   }
-  return status;
+  return result;
 }
 
-void Machine::UpdateStatus(const Thread::Status &ts) const {
-  if (!status.success) {
-    PopulateMatchStatus(ts, status);
+void Machine::UpdateResult(const Thread::Status &ts) const {
+  if (!result.success) {
+    PopulateMatchResult(ts, result);
   } else {
-    if (status.begin < ts.begin) {
+    if (result.begin < ts.begin) {
       return;
-    } else if (status.begin > ts.begin) {
-      PopulateMatchStatus(ts, status);
+    } else if (result.begin > ts.begin) {
+      PopulateMatchResult(ts, result);
       return;
     } else {
-      if (status.end < ts.end) PopulateMatchStatus(ts, status);
+      if (result.end < ts.end) PopulateMatchResult(ts, result);
     }
   }
 }

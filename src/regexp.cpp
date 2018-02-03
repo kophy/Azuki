@@ -119,7 +119,6 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
   qi::rule<Iterator, RegexpPtr()> concat;
   qi::rule<Iterator, RegexpPtr()> repeat;
   qi::rule<Iterator, RegexpPtr()> single;
-  qi::rule<Iterator, int()> number;
 
   regexp_grammer() : regexp_grammer::base_type(regexp) {
     using namespace qi;
@@ -148,14 +147,11 @@ struct regexp_grammer : qi::grammar<Iterator, RegexpPtr()> {
              (space)[_val = phx::bind(CreateLitRegexp, _1)] |
              (char_("~!@#%&=:;,_<>-"))[_val = phx::bind(CreateLitRegexp, _1)] |
              char_('.')[_val = CreateDotRegexp()];
-    number = int_;
   }
 };
 
 RegexpPtr ParseRegexp(const std::string &s) {
-  typedef std::string::const_iterator Iterator;
-
-  regexp_grammer<Iterator> g;
+  regexp_grammer<StringPtr> g;
   RegexpPtr rp;
 
   bool ok = qi::phrase_parse(s.begin(), s.end(), g, ascii::space, rp);
@@ -163,21 +159,21 @@ RegexpPtr ParseRegexp(const std::string &s) {
   throw std::runtime_error("Invalid regular expression.");
 }
 
-void PrintRegexpImpl(int tab, RegexpPtr rp) {
-  if (tab > 0) std::cout << string((tab - 1) * 4, ' ') << "|--";
+void PrintRegexpImpl(int depth, RegexpPtr rp) {
+  if (depth > 0) std::cout << string((depth - 1) * 4, ' ') << "|--";
   switch (rp->type) {
     case LIT:
       std::cout << "LIT " << rp->c << std::endl;
       break;
     case ALT:
       std::cout << "ALT" << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
-      PrintRegexpImpl(tab + 1, rp->right);
+      PrintRegexpImpl(depth + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->right);
       break;
     case CAT:
       std::cout << "CAT" << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
-      PrintRegexpImpl(tab + 1, rp->right);
+      PrintRegexpImpl(depth + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->right);
       break;
     case CLASS:
       std::cout << "CLASS " << rp->c << std::endl;
@@ -185,26 +181,26 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
     case CURLY:
       std::cout << "CURLY " << rp->low_times << " " << rp->high_times
                 << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->left);
       break;
     case DOT:
       std::cout << "DOT" << std::endl;
       break;
     case PAREN:
       std::cout << "PAREN" << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->left);
       break;
     case PLUS:
       std::cout << "PLUS" << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->left);
       break;
     case QUEST:
       std::cout << "QUEST" << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->left);
       break;
     case STAR:
       std::cout << "STAR" << std::endl;
-      PrintRegexpImpl(tab + 1, rp->left);
+      PrintRegexpImpl(depth + 1, rp->left);
       break;
     case SQUARE:
       std::cout << "SQUARE " << rp->low_ch << " " << rp->high_ch << std::endl;
@@ -216,7 +212,7 @@ void PrintRegexpImpl(int tab, RegexpPtr rp) {
 
 void PrintRegexp(RegexpPtr rp) { PrintRegexpImpl(0, rp); }
 
-bool IsValidRegexp(RegexpPtr rp) noexcept {
+bool IsValidRegexp(RegexpPtr rp) {
   if (rp.get()) {
     switch (rp->type) {
       case ALT:

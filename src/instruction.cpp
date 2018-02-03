@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <unordered_set>
 #include "instruction.h"
 
 namespace Azuki {
@@ -7,7 +8,6 @@ namespace Azuki {
 namespace {
 
 // The Context struct holds variables when compile the program recursively.
-// It should be used only in this cpp file by CompileRegexp and Emit.
 struct Context {
   int pc;
   unsigned int save_idx;
@@ -18,15 +18,33 @@ struct Context {
 
 };  // namespace
 
+// Convenience functions to create different instructions.
+InstrPtr CreateAnyInstruction();
+InstrPtr CreateAnyWordInstruction();
+InstrPtr CreateAnyDigitInstruction();
+InstrPtr CreateAnySpaceInstruction();
+InstrPtr CreateCharInstruction(char c);
+InstrPtr CreateCheckInstruction(unsigned int rpctr_idx, int low_times,
+                                int high_times);
+InstrPtr CreateIncrInstruction(unsigned int rpctr_idx);
+InstrPtr CreateMatchInstruction();
+InstrPtr CreateRangeInstruction(char low_ch, char high_ch);
+InstrPtr CreateSaveInstruction(unsigned int save_idx);
+InstrPtr CreateSetInstruction(unsigned int rpctr_idx, int value);
+InstrPtr CreateSplitInstruction(unsigned int dst, bool greedy = false);
+InstrPtr CreateJmpInstruction(unsigned int dst);
+
 // Calculate the number of instructions required to represent the regexp.
 int CalculateInstruction(RegexpPtr rp);
+int CalculateInstructionImpl(RegexpPtr rp);
 
 // Emit instructions compiled from regexp to program with starting index pc.
 void Emit(Program &program, Context &context, RegexpPtr rp);
 
 bool Instruction::ConsumeCharacter() {
-  return opcode == ANY || opcode == ANY_WORD || opcode == ANY_DIGIT ||
-         opcode == ANY_SPACE || opcode == CHAR || opcode == RANGE;
+  static const std::unordered_set<Opcode> data_opcodes(
+      {ANY, ANY_WORD, ANY_DIGIT, ANY_SPACE, CHAR, RANGE});
+  return data_opcodes.count(opcode);
 }
 
 std::string Instruction::str() {
@@ -79,49 +97,86 @@ std::string Instruction::str() {
   return ss.str();
 }
 
-InstrPtr CreateAnyInstruction() { return InstrPtr(new Instruction(ANY)); }
+Program CompileRegexp(RegexpPtr rp) {
+  Program program(CalculateInstruction(rp));
+  Context context(0, 0, 0);
+  Emit(program, context, rp);
+  program.back() = CreateMatchInstruction();
+
+  for (unsigned int idx = 0; idx < program.size(); ++idx)
+    program[idx]->idx = idx;
+  return program;
+}
+
+void PrintProgram(const Program &program) {
+  for (int idx = 0; idx < program.size(); ++idx) {
+    auto &instr = program[idx];
+    std::cout << instr->str() << std::endl;
+  }
+}
+
+InstrPtr CreateAnyInstruction() {
+  InstrPtr instr(new Instruction());
+  instr->opcode = ANY;
+  return instr;
+}
 
 InstrPtr CreateAnyWordInstruction() {
-  return InstrPtr(new Instruction(ANY_WORD));
+  InstrPtr instr(new Instruction());
+  instr->opcode = ANY_WORD;
+  return instr;
 }
 
 InstrPtr CreateAnyDigitInstruction() {
-  return InstrPtr(new Instruction(ANY_DIGIT));
+  InstrPtr instr(new Instruction());
+  instr->opcode = ANY_DIGIT;
+  return instr;
 }
 
 InstrPtr CreateAnySpaceInstruction() {
-  return InstrPtr(new Instruction(ANY_SPACE));
+  InstrPtr instr(new Instruction());
+  instr->opcode = ANY_SPACE;
+  return instr;
 }
 
 InstrPtr CreateCharInstruction(char c) {
-  InstrPtr instr(new Instruction(CHAR));
+  InstrPtr instr(new Instruction());
+  instr->opcode = CHAR;
   instr->c = c;
   return InstrPtr(instr);
 }
 
-InstrPtr CreateMatchInstruction() { return InstrPtr(new Instruction(MATCH)); }
+InstrPtr CreateMatchInstruction() {
+  InstrPtr instr(new Instruction());
+  instr->opcode = MATCH;
+  return instr;
+}
 
 InstrPtr CreateSaveInstruction(unsigned int save_idx) {
-  InstrPtr rp(new Instruction(SAVE));
-  rp->save_idx = save_idx;
-  return rp;
+  InstrPtr instr(new Instruction());
+  instr->opcode = SAVE;
+  instr->save_idx = save_idx;
+  return instr;
 }
 
 InstrPtr CreateSplitInstruction(unsigned int dst, bool greedy) {
-  InstrPtr instr(new Instruction(SPLIT));
+  InstrPtr instr(new Instruction());
+  instr->opcode = SPLIT;
   instr->dst = dst;
   instr->greedy = greedy;
   return instr;
 }
 
 InstrPtr CreateJmpInstruction(unsigned int dst) {
-  InstrPtr instr(new Instruction(JMP));
+  InstrPtr instr(new Instruction());
+  instr->opcode = JMP;
   instr->dst = dst;
   return instr;
 }
 
 InstrPtr CreateRangeInstruction(char low_ch, char high_ch) {
-  InstrPtr instr(new Instruction(RANGE));
+  InstrPtr instr(new Instruction());
+  instr->opcode = RANGE;
   instr->low_ch = low_ch;
   instr->high_ch = high_ch;
   return instr;
@@ -129,7 +184,8 @@ InstrPtr CreateRangeInstruction(char low_ch, char high_ch) {
 
 InstrPtr CreateCheckInstruction(unsigned int rpctr_idx, int low_times,
                                 int high_times) {
-  InstrPtr instr(new Instruction(CHECK));
+  InstrPtr instr(new Instruction());
+  instr->opcode = CHECK;
   instr->rpctr_idx = rpctr_idx;
   instr->low_times = low_times;
   instr->high_times = high_times;
@@ -137,19 +193,20 @@ InstrPtr CreateCheckInstruction(unsigned int rpctr_idx, int low_times,
 }
 
 InstrPtr CreateIncrInstruction(unsigned int rpctr_idx) {
-  InstrPtr instr(new Instruction(INCR));
+  InstrPtr instr(new Instruction());
+  instr->opcode = INCR;
   instr->rpctr_idx = rpctr_idx;
   return instr;
 }
 
 InstrPtr CreateSetInstruction(unsigned int rpctr_idx, int value) {
-  InstrPtr instr(new Instruction(SET));
+  InstrPtr instr(new Instruction());
+  instr->opcode = SET;
   instr->rpctr_idx = rpctr_idx;
   instr->value = value;
   return instr;
 }
 
-int CalculateInstructionImpl(RegexpPtr rp);
 int CalculateInstruction(RegexpPtr rp) {
   return CalculateInstructionImpl(rp) + 1;  // the last instruction "MATCH"
 }
@@ -249,24 +306,6 @@ void Emit(Program &program, Context &context, RegexpPtr rp) {
     program[pc++] = CreateRangeInstruction(rp->low_ch, rp->high_ch);
   } else {
     throw std::runtime_error("Unexpected regexp type.");
-  }
-}
-
-Program CompileRegexp(RegexpPtr rp) {
-  Program program(CalculateInstruction(rp));
-  Context context(0, 0, 0);
-  Emit(program, context, rp);
-  program.back() = CreateMatchInstruction();
-
-  for (unsigned int idx = 0; idx < program.size(); ++idx)
-    program[idx]->idx = idx;
-  return program;
-}
-
-void PrintProgram(const Program &program) {
-  for (int idx = 0; idx < program.size(); ++idx) {
-    auto &instr = program[idx];
-    std::cout << instr->str() << std::endl;
   }
 }
 

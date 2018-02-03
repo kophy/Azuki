@@ -24,6 +24,9 @@ enum Opcode {
 };
 
 // An instruction struct encodes information for thread to run the instruction.
+// Don't create Instruction directly with constructor as it may lead to
+// uninitialized fields. Use CompileRegexp below to get a whole program (a
+// sequence of coherent instructions) at once.
 struct Instruction {
   // Required fields.
   unsigned int idx;  // instruction index
@@ -40,29 +43,12 @@ struct Instruction {
   int low_times, high_times;  // repeat times lower and upper bound (CHECK)
   int value;                  // value to set rpctr_idx (SET)
 
-  Instruction(Opcode opcode) : opcode(opcode) {}
   bool ConsumeCharacter();
   string str();
 };
 
 typedef shared_ptr<Instruction> InstrPtr;
 typedef vector<InstrPtr> Program;
-
-// Convenience functions to create different instructions.
-InstrPtr CreateAnyInstruction();
-InstrPtr CreateAnyWordInstruction();
-InstrPtr CreateAnyDigitInstruction();
-InstrPtr CreateAnySpaceInstruction();
-InstrPtr CreateCharInstruction(char c);
-InstrPtr CreateCheckInstruction(unsigned int rpctr_idx, int low_times,
-                                int high_times);
-InstrPtr CreateIncrInstruction(unsigned int rpctr_idx);
-InstrPtr CreateMatchInstruction();
-InstrPtr CreateRangeInstruction(char low_ch, char high_ch);
-InstrPtr CreateSaveInstruction(unsigned int save_idx);
-InstrPtr CreateSetInstruction(unsigned int rpctr_idx, int value);
-InstrPtr CreateSplitInstruction(unsigned int dst, bool greedy = false);
-InstrPtr CreateJmpInstruction(unsigned int dst);
 
 // Compile into program the regular expression represented with Regexp.
 // Example:

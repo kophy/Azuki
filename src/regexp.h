@@ -24,9 +24,6 @@ enum RegexpType {
 // raw regular expression.
 // Don't use default constructor as it may lead to uninitialized fields. Use
 // convenience functions(CreateAltRegexp, etc) below or ParseRegexp instead.
-// Example:
-//   RegexpPtr rp1 = CreateLitRegexp('a');
-//   RegexpPtr rp2 = ParseRegexp("a+b");
 struct Regexp {
   // Required field(s).
   RegexpType type;
@@ -42,6 +39,8 @@ struct Regexp {
 typedef shared_ptr<Regexp> RegexpPtr;
 
 // Convenience functions to create different Regexps.
+// Example:
+//    RegexpPtr rp = CreateLitRegexp('a');
 RegexpPtr CreateAltRegexp(RegexpPtr left, RegexpPtr right);
 RegexpPtr CreateCatRegexp(RegexpPtr left, RegexpPtr right);
 RegexpPtr CreateClassRegexp(char c);
@@ -58,13 +57,15 @@ RegexpPtr CreateSquareRegexp(char low_ch, char high_ch);
 bool operator==(RegexpPtr rp1, RegexpPtr rp2);
 
 // Build Regexp representation from raw regular expression.
+// Example:
+//    RegexpPtr rp = ParseRegexp("a+b");
 RegexpPtr ParseRegexp(const std::string &s);
 
 // Print the Regexp (for debug use).
 void PrintRegexp(RegexpPtr rp);
 
 // Check whether the Regexp is valid.
-bool IsValidRegexp(RegexpPtr rp) noexcept;
+bool IsValidRegexp(RegexpPtr rp);
 
 };  // namespace Azuki
 
