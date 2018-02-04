@@ -90,7 +90,7 @@ Check file `src/azuki.h` for detailed guide.
 ### Regex Syntax
 
 |         | Effect   | Usage   | Match | Skip |
-| ------------- |:-------------:|:-----:|:-----:|:------:|
+| ------------- |:-------------|:-----|:-----|:------|
 | &#124;  | alternation  | a &#124; b  | "a", "b"  | "c" |  
 |  ? | match item 0 or 1 time | a?b  |  "b", "ab" | "aa", "aab" |  
 |  + | match item 1 or more times | a+  | "a", "aaa" | "", "b" |  
@@ -107,7 +107,7 @@ Check file `src/azuki.h` for detailed guide.
 
 ## Python Support
 
-Azuki provides a python wrapper through Boost.Python.  
+Azuki provides a python wrapper through [Boost.Python](http://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/index.html).  
 After running `make`, copy `pyazuki.so` under `build/python` directory to whatever directory you like, in that directory you can use Python to play with Azuki:
 ```
 import pyazuki
