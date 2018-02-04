@@ -11,10 +11,40 @@ The name `Azuki` is Japanese アズキ(read bean).
 ## Implementation
 - [Boost Spirit](http://boost-spirit.com/home/) is used to parse regular expression into syntax tree.
 - Syntax tree is compiled into program like Russ Cox's [re1](https://code.google.com/archive/p/re1/).
-- NFA is simulated through threads; a virtual machine runs Thompson's algorithm.
+- NFA is simulated through “thread”s; a virtual machine runs Thompson's algorithm.
 - Submatch tracking is recorded in each thread's state.
 
-## Syntax
+## Dependencies
+
+To build Azuki, you need a compiler supporting C++17, CMake, Google Test and Boost installed. My environment is:
+
+- Clang Apple LLVM version 9.0.0 (clang-900.0.39.2)
+- CMake 3.10.1
+- Google Test 1.8.0
+- Boost 1.66.0
+- Python 2.7.10
+
+``` shell
+mkdir build
+cd build
+cmake ..
+make && make test
+```
+
+## Usage
+
+## Quick Start
+Azuki provides APIs similar to `<regex>` library. Briefly speaking, we first use `CreateMachine` to create a virtual machine from raw regular expression. Then we can detect match substring with `RegexSearch`, or replace match substring with `RegexReplace`.
+
+```C++
+// create a virtual machine from regular expression
+Azuki::Machine m = Azuki::CreateMachine("^(a+)b$");
+Azuki::RegexSearch(m, "aaab");  // true
+Azuki::RegexSearch(m, "ac");    // false
+```
+
+## Regex Syntax
+
 |         | Effect   | Usage   | Match | Skip |
 | ------------- |:-------------:|:-----:|:-----:|:------:|
 | &#124;  | alternation  | a &#124; b  | "a", "b"  | "c" |  
@@ -29,47 +59,9 @@ The name `Azuki` is Japanese アズキ(read bean).
 | [-] | match character in range | [a-c] | "a", "c" | "d", "1" |
 | {,} | match item repeating allowed times | a{2,3} | "aa", "aaa" | "a", "ba" |
 
-## Example
-Suppose we want to match the Internet word for "laugh", 233(also 2333, 23333, ...), the regular expression can be "(233+)".
+## Python Support
 
-```c++
-Azuki::Machine m = Azuki::CreateMachine("(233+)");
-std::vector<std::string> v;
-if (Azuki::RegexSearch(m, "6662333QAQ", v)) {
-  std::cout << "success" << std::endl;
-  for (auto &s : v)
-    std::cout << s << std::endl;
-} else {
-  std::cout << "failure" << std::endl;
-}
-```
-The output will be:
-```
-success
-2333
-```
-
-The syntax tree is:
-```
-CAT
-|--LIT 2
-|--CAT
-    |--LIT 3
-    |--PLUS
-        |--LIT 3
-```
-
-The compiled program is:
-```
-I0 CHAR '2'
-I1 CHAR '3'
-I2 CHAR '3'
-I3 SPLIT I4 I5
-I4 JMP I2
-I5 MATCH
-```
-
-More examples can be found in `example` directory.
+Azuki provides a python wrapper. 
 
 ## TODO
 - [ ] non-capturing group
