@@ -111,6 +111,8 @@ Azuki provides a python wrapper through [Boost.Python](http://www.boost.org/doc/
 After running `make`, copy `pyazuki.so` under `build/python` directory to whatever directory you like, in that directory you can use Python to play with Azuki:
 ```
 import pyazuki
+machine = pyazuki.CreateMachine("(a+)b")
+s = "daabe"
 print pyazuki.RegexReplace(machine, s, "$0c", True)
 ```
 Check file `python/demo.py` for more examples.
