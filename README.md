@@ -8,15 +8,6 @@ Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。
 The name `Azuki` is Japanese アズキ(read bean).  
 名字`Azuki`来自日语アズキ(红豆)。
 
-- [Azuki](#azuki)
-  * [Introduction](#introduction)
-  * [Dependencies](#dependencies)
-  * [Usage](#usage)
-    + [Quick Start](#quick-start)
-    + [Regex Syntax](#regex-syntax)
-  * [Python Support](#python-support)
-  * [Reference](#reference)
-
 ## Introduction
 
 Azuki is basically a C++ version of Russ Cox's [re1](https://code.google.com/archive/p/re1/), but supports more regex syntax and operations.
