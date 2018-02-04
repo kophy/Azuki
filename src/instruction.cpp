@@ -67,11 +67,11 @@ std::string Instruction::str() {
       ss << "CHAR '" << c << "'";
       break;
     case CHECK:
-      ss << "CHECK rpctr_idx[" << rpctr_idx << "] " << low_times << " "
+      ss << "CHECK rpctr[" << rpctr_idx << "] " << low_times << " "
          << high_times;
       break;
     case INCR:
-      ss << "INCR rpctr_idx[" << rpctr_idx << "]";
+      ss << "INCR rpctr[" << rpctr_idx << "]";
       break;
     case JMP:
       ss << "JMP I" << dst;
@@ -83,7 +83,7 @@ std::string Instruction::str() {
       ss << "SAVE " << save_idx;
       break;
     case SET:
-      ss << "SET rpctr_idx[" << rpctr_idx << "]";
+      ss << "SET rpctr[" << rpctr_idx << "]";
       break;
     case SPLIT:
       ss << "SPLIT I" << idx + 1 << " I" << dst;
