@@ -92,16 +92,6 @@ bool Thread::RunOneStep(StringPtr sp, bool save_capture) {
 Machine::Machine(const Program &program)
     : program(program), match_begin(false), match_end(false) {}
 
-Machine &Machine::SetMatchBegin(bool b) {
-  match_begin = b;
-  return *this;
-}
-
-Machine &Machine::SetMatchEnd(bool b) {
-  match_end = b;
-  return *this;
-}
-
 MatchResult Machine::Run(const string &s, bool save_capture) const {
   ready = std::queue<ThreadPtr>();
   result.success = false;

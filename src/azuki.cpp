@@ -48,7 +48,8 @@ Machine CreateMachine(const string &e) {
   Program program = CompileRegexp(rp);
 
   Machine m(program);
-  m.SetMatchBegin(match_begin).SetMatchEnd(match_end);
+  m.SetMatchBegin(match_begin);
+  m.SetMatchEnd(match_end);
   return m;
 }
 

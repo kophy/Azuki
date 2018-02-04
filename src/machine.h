@@ -60,8 +60,8 @@ class Machine {
   Machine(const Program &program);
 
   // Set flags for positional match.
-  Machine &SetMatchBegin(bool b);
-  Machine &SetMatchEnd(bool b);
+  void SetMatchBegin(bool b) { match_begin = b; }
+  void SetMatchEnd(bool b)  { match_end = b; }
 
   // Run program on input string s with Rob Pike's implementation.
   // It maintains a collection of threads ready to run, and threads run in lock
