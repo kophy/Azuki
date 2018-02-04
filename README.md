@@ -8,6 +8,15 @@ Azuki是一个简单的、基于虚拟机方法实现的正则表达式引擎。
 The name `Azuki` is Japanese アズキ(read bean).  
 名字`Azuki`来自日语アズキ(红豆)。
 
+- [Azuki](#azuki)
+  * [Introduction](#introduction)
+  * [Dependencies](#dependencies)
+  * [Usage](#usage)
+    + [Quick Start](#quick-start)
+    + [Regex Syntax](#regex-syntax)
+  * [Python Support](#python-support)
+  * [Reference](#reference)
+
 ## Introduction
 
 Azuki is basically a C++ version of Russ Cox's [re1](https://code.google.com/archive/p/re1/), but supports more regex syntax and operations.
@@ -29,7 +38,7 @@ I4 MATCH
 ## Dependencies
 
 To build Azuki, you need a compiler supporting C++17, CMake, Google Test and Boost installed.  
-For example, my environment is:
+My environment is:
 
 - Clang Apple LLVM version 9.0.0 (clang-900.0.39.2)
 - CMake 3.10.1
@@ -60,7 +69,7 @@ Azuki::RegexSearch(m, "ac");    // false
 ```
 
 #### Example 2
-Run `RegexSearch` through input string and print capturing groups:
+Run `RegexSearch` through input string to find all substrings match pattern "(a+)(b)", and print capturing groups in each substring:
 ```C++
 Azuki::Machine m = Azuki::CreateMachine("(a+)(b)");
 Azuki::MatchResult result;
@@ -107,12 +116,18 @@ Check file `src/azuki.h` for detailed guide.
 
 ## Python Support
 
-Azuki provides a python wrapper through Boost.Python. After running `make`, copy `pyazuki.so` under `build/python` directory to whatever directory you like, in that directory you can use Python to play with Azuki:
+Azuki provides a python wrapper through Boost.Python.  
+After running `make`, copy `pyazuki.so` under `build/python` directory to whatever directory you like, in that directory you can use Python to play with Azuki:
 ```
 import pyazuki
 print pyazuki.RegexReplace(machine, s, "$0c", True)
 ```
 Check file `python/demo.py` for more examples.
+
+## Reference
+- [Regular Expression Matching: the Virtual Machine Approach](https://swtch.com/~rsc/regexp/regexp2.html)
+- [C++ standard regular expressions library](http://en.cppreference.com/w/cpp/regex)
+- [Building a Custom Expression Tree in Spirit:Qi](https://stackoverflow.com/questions/13056893/building-a-custom-expression-tree-in-spiritqi-without-utree-or-boostvariant)
 
 ## TODO
 - [ ] non-capturing group
@@ -121,8 +136,3 @@ Check file `python/demo.py` for more examples.
 - [X] character and numerical ranges([a-c], [1-2])
 - [X] curly bracket quantification ({2, 5})
 - [X] regex replace
-
-## Reference
-- [Regular Expression Matching: the Virtual Machine Approach](https://swtch.com/~rsc/regexp/regexp2.html)
-- [C++ standard regular expressions library](http://en.cppreference.com/w/cpp/regex)
-- [Building a Custom Expression Tree in Spirit:Qi](https://stackoverflow.com/questions/13056893/building-a-custom-expression-tree-in-spiritqi-without-utree-or-boostvariant)
