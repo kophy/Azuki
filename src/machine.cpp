@@ -11,7 +11,6 @@ void PopulateMatchResult(const Thread::Status &ts, MatchResult &ms) {
   ms.begin = ts.begin;
   ms.end = ts.end;
   vector<string> temp;
-  ;
   for (unsigned i = 0; i < ts.saved.size(); i += 2)
     temp.push_back(string(ts.saved[i], ts.saved[i + 1]));
   ms.capture = std::move(temp);
